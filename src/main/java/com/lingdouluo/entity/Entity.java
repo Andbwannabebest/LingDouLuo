@@ -1,45 +1,72 @@
+// src/main/java/com/lingdouluo/entity/Entity.java
 package com.lingdouluo.entity;
 
-import com.lingdouluo.physics.CollisionLayer;
+import com.lingdouluo.physics.CollisionResult;
 import javafx.scene.canvas.GraphicsContext;
 
-/**
- * 所有游戏实体的基类（接口），定义统一行为规范
- */
-public interface Entity {
-    // 获取实体X坐标
-    double getX();
+public abstract class Entity {
+    protected double x;
+    protected double y;
+    protected double width;
+    protected double height;
+    protected double velocityX;
+    protected double velocityY;
+    protected boolean isActive;
+    protected boolean isOnGround;
 
-    // 获取实体Y坐标
-    double getY();
+    public Entity(double x, double y, double width, double height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.velocityX = 0;
+        this.velocityY = 0;
+        this.isActive = true;
+        this.isOnGround = false;
+    }
 
-    // 获取实体宽度
-    double getWidth();
+    public abstract void update(double deltaTime);
+    public abstract void render(GraphicsContext gc);
+    public abstract void handleCollision(CollisionResult collision);
 
-    // 获取实体高度
-    double getHeight();
+    // 位置和大小相关的方法
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getWidth() { return width; }
+    public double getHeight() { return height; }
 
-    // 获取碰撞层
-    CollisionLayer getCollisionLayer();
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 
-    // 更新实体状态
-    void update(double deltaTime);
+    // 速度相关的方法
+    public double getVelocityX() { return velocityX; }
+    public double getVelocityY() { return velocityY; }
+    public void setVelocityX(double velocityX) { this.velocityX = velocityX; }
+    public void setVelocityY(double velocityY) { this.velocityY = velocityY; }
 
-    // 渲染实体
-    void render(GraphicsContext gc);
+    // 状态相关的方法
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean active) { isActive = active; }
+    public boolean isOnGround() { return isOnGround; }
+    public void setOnGround(boolean onGround) { isOnGround = onGround; }
 
-    // 判断是否需要销毁
-    boolean isDestroyed();
+    // 碰撞检测辅助方法
+    public boolean intersects(Entity other) {
+        return x < other.x + other.width &&
+                x + width > other.x &&
+                y < other.y + other.height &&
+                y + height > other.y;
+    }
 
-    // 设置销毁状态
-    void setDestroyed(boolean destroyed);
+    public double getCenterX() {
+        return x + width / 2;
+    }
 
-    // 新增：判断当前实体是否与另一个实体碰撞（AABB碰撞算法）
-    default boolean isCollidingWith(Entity other) {
-        // 接口默认方法（Java 8+支持），无需每个实现类重复编写
-        return this.getX() < other.getX() + other.getWidth() &&
-                this.getX() + this.getWidth() > other.getX() &&
-                this.getY() < other.getY() + other.getHeight() &&
-                this.getY() + this.getHeight() > other.getY();
+    public double getCenterY() {
+        return y + height / 2;
     }
 }

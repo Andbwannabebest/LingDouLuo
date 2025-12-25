@@ -1,57 +1,86 @@
+// src/main/java/com/lingdouluo/input/InputManager.java
 package com.lingdouluo.input;
 
-import javafx.scene.input.KeyCode;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * 输入管理单例类，统一监听和管理键盘按键状态
- */
 public class InputManager {
-    // 单例实例
-    private static InputManager instance;
-    // 存储当前按下的按键
-    private Set<KeyCode> pressedKeys;
 
-    private InputManager() {
+    private Set<Integer> pressedKeys;
+    private Set<Integer> justPressedKeys;
+
+    // 鼠标/手柄状态（未来扩展）
+    private double mouseX;
+    private double mouseY;
+    private boolean mousePressed;
+
+    public InputManager() {
         pressedKeys = new HashSet<>();
+        justPressedKeys = new HashSet<>();
+        mouseX = 0;
+        mouseY = 0;
+        mousePressed = false;
     }
 
-    /**
-     * 获取单例对象
-     */
-    public static InputManager getInstance() {
-        if (instance == null) {
-            instance = new InputManager();
-        }
-        return instance;
-    }
-
-    /**
-     * 按键按下时调用
-     */
-    public void keyPressed(KeyCode keyCode) {
+    public void handleKeyPressed(javafx.scene.input.KeyEvent event) {
+        int keyCode = event.getCode().getCode();
         pressedKeys.add(keyCode);
+        justPressedKeys.add(keyCode);
     }
 
-    /**
-     * 按键释放时调用
-     */
-    public void keyReleased(KeyCode keyCode) {
+    public void handleKeyReleased(javafx.scene.input.KeyEvent event) {
+        int keyCode = event.getCode().getCode();
         pressedKeys.remove(keyCode);
     }
 
-    /**
-     * 判断某个按键是否正在被按下
-     */
-    public boolean isKeyPressed(KeyCode keyCode) {
+    public void handleMousePressed(javafx.scene.input.MouseEvent event) {
+        mouseX = event.getX();
+        mouseY = event.getY();
+        mousePressed = true;
+    }
+
+    public void handleMouseReleased(javafx.scene.input.MouseEvent event) {
+        mouseX = event.getX();
+        mouseY = event.getY();
+        mousePressed = false;
+    }
+
+    public void handleMouseMoved(javafx.scene.input.MouseEvent event) {
+        mouseX = event.getX();
+        mouseY = event.getY();
+    }
+
+    public void update() {
+        // 清除刚按下的键
+        justPressedKeys.clear();
+    }
+
+    // 键盘输入检查
+    public boolean isKeyPressed(int keyCode) {
         return pressedKeys.contains(keyCode);
     }
 
-    /**
-     * 清空所有按键状态（如游戏暂停/结束时）
-     */
-    public void clearPressedKeys() {
+    public boolean isKeyJustPressed(int keyCode) {
+        return justPressedKeys.contains(keyCode);
+    }
+
+    // 鼠标输入检查
+    public double getMouseX() { return mouseX; }
+    public double getMouseY() { return mouseY; }
+    public boolean isMousePressed() { return mousePressed; }
+
+    // 组合键检查（未来扩展）
+    public boolean isShiftPressed() {
+        return isKeyPressed(16); // Shift键
+    }
+
+    public boolean isControlPressed() {
+        return isKeyPressed(17); // Ctrl键
+    }
+
+    public void clear() {
         pressedKeys.clear();
+        justPressedKeys.clear();
+        mousePressed = false;
     }
 }

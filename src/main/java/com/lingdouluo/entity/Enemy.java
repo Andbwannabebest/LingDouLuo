@@ -1,145 +1,176 @@
+// src/main/java/com/lingdouluo/entity/Enemy.java
 package com.lingdouluo.entity;
 
-import com.lingdouluo.config.Config;
-import com.lingdouluo.physics.CollisionLayer;
+import com.lingdouluo.physics.CollisionResult;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import com.lingdouluo.GameLoop; // 添加GameLoop导入
 
-public class Enemy implements Entity {
-    // 成员变量
-    private double x;
-    private double y;
-    private double width;
-    private double height;
-    private int health;
-    private double moveSpeed;
-    private int direction; // 1=右，-1=左
-    private boolean isDestroyed;
+public class Enemy extends Entity {
 
-    // 构造器
-    public Enemy(double x, double y, int health) {
-        this.x = x;
-        this.y = y;
-        this.width = Config.ENEMY_WIDTH;
-        this.height = Config.ENEMY_HEIGHT;
-        this.health = health;
-        this.moveSpeed = Config.ENEMY_MOVE_SPEED;
-        this.direction = 1;
-        this.isDestroyed = false;
-    }
+    protected int health;
+    protected int maxHealth;
+    protected int damage;
+    protected int scoreValue;
+    protected boolean isAggressive;
+    protected double patrolRange;
+    protected double patrolSpeed;
+    protected double detectionRange;
 
-    // ==================== Entity接口实现 ====================
-    @Override
-    public double getX() {
-        return x;
-    }
+    protected double patrolStartX;
+    protected double patrolDirection;
 
-    @Override
-    public double getY() {
-        return y;
-    }
+    public Enemy(double x, double y, double width, double height) {
+        super(x, y, width, height);
+        this.maxHealth = 20;
+        this.health = maxHealth;
+        this.damage = 10;
+        this.scoreValue = 100;
+        this.isAggressive = true;
+        this.patrolRange = 100;
+        this.patrolSpeed = 1.0;
+        this.detectionRange = 200;
 
-    @Override
-    public double getWidth() {
-        return width;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
-    public CollisionLayer getCollisionLayer() {
-        return CollisionLayer.ENEMY;
+        this.patrolStartX = x;
+        this.patrolDirection = 1; // 1表示向右，-1表示向左
     }
 
     @Override
     public void update(double deltaTime) {
-        if (isDestroyed) return;
+        if (!isActive) return;
 
-        // 左右往返移动
-        double moveDistance = direction * moveSpeed * deltaTime;
-        x += moveDistance;
-
-        // 边界检测
-        if (x < 0) {
-            x = 0;
-            direction = 1;
-        }
-        if (x + width > Config.SCREEN_WIDTH) {
-            x = Config.SCREEN_WIDTH - width;
-            direction = -1;
-        }
+        patrol(deltaTime);
+        applyPhysics(deltaTime);
+        updateAI(deltaTime);
     }
 
-    // 重载update方法（兼容AI追击逻辑）
-    public void update(double deltaTime, Player player, GameLoop gameLoop) {
-        this.update(deltaTime);
-        // 简单AI：追击玩家
-        if (player != null && !player.isDestroyed()) {
-            if (player.getX() > x + width/2 && direction != 1) {
-                direction = 1;
-            } else if (player.getX() < x + width/2 && direction != -1) {
-                direction = -1;
+    protected void patrol(double deltaTime) {
+        // 简单的巡逻逻辑
+        if (patrolRange > 0) {
+            velocityX = patrolDirection * patrolSpeed;
+
+            // 检查是否到达巡逻边界
+            if (x > patrolStartX + patrolRange) {
+                patrolDirection = -1;
+                velocityX = 0;
+            } else if (x < patrolStartX - patrolRange) {
+                patrolDirection = 1;
+                velocityX = 0;
             }
         }
     }
 
+    protected void applyPhysics(double deltaTime) {
+        // 应用重力
+        if (!isOnGround) {
+            velocityY += 0.5;
+        }
+
+        // 更新位置
+        x += velocityX * deltaTime;
+        y += velocityY * deltaTime;
+    }
+
+    protected void updateAI(double deltaTime) {
+        // 子类可以重写这个方法来实现特定的AI行为
+    }
+
     @Override
     public void render(GraphicsContext gc) {
-        if (isDestroyed) return;
+        if (!isActive) return;
 
-        // 渲染敌人
-        gc.setFill(Color.RED);
+        // 绘制敌人身体
+        gc.setFill(Color.rgb(200, 50, 50)); // 红色敌人
         gc.fillRect(x, y, width, height);
 
-        // 渲染血量
+        // 绘制敌人眼睛
         gc.setFill(Color.WHITE);
-        gc.setFont(javafx.scene.text.Font.font(12));
-        gc.fillText("HP: " + health, x, y - 10);
+        gc.fillOval(x + 5, y + 5, 8, 8);
+        gc.fillOval(x + width - 13, y + 5, 8, 8);
+
+        gc.setFill(Color.BLACK);
+        gc.fillOval(x + 7, y + 7, 4, 4);
+        gc.fillOval(x + width - 11, y + 7, 4, 4);
+
+        // 绘制生命条
+        drawHealthBar(gc);
+    }
+
+    protected void drawHealthBar(GraphicsContext gc) {
+        double healthPercent = (double) health / maxHealth;
+        double barWidth = width;
+        double barHeight = 4;
+        double barX = x;
+        double barY = y - 8;
+
+        // 背景
+        gc.setFill(Color.rgb(50, 50, 50));
+        gc.fillRect(barX, barY, barWidth, barHeight);
+
+        // 生命值
+        if (healthPercent > 0.6) {
+            gc.setFill(Color.GREEN);
+        } else if (healthPercent > 0.3) {
+            gc.setFill(Color.YELLOW);
+        } else {
+            gc.setFill(Color.RED);
+        }
+        gc.fillRect(barX, barY, barWidth * healthPercent, barHeight);
+
+        // 边框
+        gc.setStroke(Color.BLACK);
+        gc.setLineWidth(1);
+        gc.strokeRect(barX, barY, barWidth, barHeight);
     }
 
     @Override
-    public boolean isDestroyed() {
-        return isDestroyed;
+    public void handleCollision(CollisionResult collision) {
+        // 处理碰撞
+        switch (collision.getType()) {
+            case PLATFORM:
+                handlePlatformCollision(collision);
+                break;
+            case BULLET:
+                takeDamage(collision.getDamage());
+                break;
+            case PLAYER:
+                // 攻击玩家
+                break;
+        }
     }
 
-    @Override
-    public void setDestroyed(boolean destroyed) {
-        isDestroyed = destroyed;
+    protected void handlePlatformCollision(CollisionResult collision) {
+        // 平台碰撞处理
+        if (collision.getNormalY() < 0) { // 从上方碰撞
+            y = collision.getEntityY() - height;
+            velocityY = 0;
+            isOnGround = true;
+        } else if (collision.getNormalY() > 0) { // 从下方碰撞
+            y = collision.getEntityY() + collision.getEntityHeight();
+            velocityY = 0;
+        }
+
+        if (collision.getNormalX() != 0) { // 水平碰撞
+            // 改变巡逻方向
+            patrolDirection *= -1;
+        }
     }
 
-    // ==================== 自定义方法 ====================
     public void takeDamage(int damage) {
-        this.health -= damage;
+        health -= damage;
         if (health <= 0) {
-            setDestroyed(true);
+            health = 0;
+            isActive = false;
+            // TODO: 播放死亡动画和音效
         }
     }
 
-    // ==================== Getter & Setter ====================
-    public int getHealth() {
-        return health;
-    }
+    // Getter和Setter方法
+    public int getHealth() { return health; }
+    public int getMaxHealth() { return maxHealth; }
+    public int getDamage() { return damage; }
+    public int getScoreValue() { return scoreValue; }
 
-    public void setHealth(int health) {
-        this.health = Math.max(health, 0);
-        if (this.health <= 0) {
-            setDestroyed(true);
-        }
-    }
-
-    public int getDamage() {
-        return Config.ENEMY_ATTACK_DAMAGE;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
+    public void setHealth(int health) { this.health = health; }
+    public void setDamage(int damage) { this.damage = damage; }
+    public void setScoreValue(int scoreValue) { this.scoreValue = scoreValue; }
 }

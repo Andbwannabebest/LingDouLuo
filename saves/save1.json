@@ -1,0 +1,18 @@
+{
+  "playerHealth": 3,
+  "playerMaxHealth": 3,
+  "playerLives": 3,
+  "playerScore": 0,
+  "currentLevel": 0,
+  "gameTime": 0.11049600000000001,
+  "saveTimestamp": 1766686470516,
+  "currentWeapon": "rifle",
+  "rifleAmmo": -1,
+  "grenadeAmmo": 20,
+  "levelCompleted": [
+    false,
+    false,
+    false,
+    false
+  ]
+}

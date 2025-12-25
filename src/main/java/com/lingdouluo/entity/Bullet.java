@@ -1,117 +1,111 @@
+// src/main/java/com/lingdouluo/entity/Bullet.java
 package com.lingdouluo.entity;
 
 import com.lingdouluo.config.Config;
-import com.lingdouluo.physics.CollisionLayer;
+import com.lingdouluo.physics.CollisionResult;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Bullet implements Entity {
-    // 成员变量
-    private double x;
-    private double y;
-    private double width;
-    private double height;
-    private double direction; // 1=右，-1=左
+public class Bullet extends Entity {
+
     private int damage;
-    private boolean isDestroyed;
-    private double travelDistance; // 子弹飞行距离（新增：解决找不到getTravelDistance()的错误）
+    private Color color;
+    private boolean isExplosive;
+    private double explosionRadius;
+    private long creationTime;
+    private static final long MAX_LIFETIME = 5000; // 5秒
 
-    // 构造器
-    public Bullet(double x, double y, double direction) {
-        this.x = x;
-        this.y = y;
-        this.width = Config.BULLET_WIDTH;
-        this.height = Config.BULLET_HEIGHT;
-        this.direction = direction;
-        this.damage = Config.BULLET_DAMAGE;
-        this.isDestroyed = false;
-        this.travelDistance = 0; // 初始化飞行距离为0
-    }
-
-    // ==================== 补充缺失的getter方法 ====================
-    // 获取子弹飞行距离（解决找不到getTravelDistance()的错误）
-    public double getTravelDistance() {
-        return travelDistance;
-    }
-
-    // 获取子弹伤害值
-    public int getDamage() {
-        return damage;
-    }
-
-    // ==================== Entity接口实现 ====================
-    @Override
-    public double getX() {
-        return x;
-    }
-
-    @Override
-    public double getY() {
-        return y;
-    }
-
-    @Override
-    public double getWidth() {
-        return width;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
-    public CollisionLayer getCollisionLayer() {
-        return CollisionLayer.BULLET;
+    public Bullet(double x, double y, double width, double height) {
+        super(x, y, width, height);
+        this.damage = 10;
+        this.color = Color.YELLOW;
+        this.isExplosive = false;
+        this.explosionRadius = 0;
+        this.creationTime = System.currentTimeMillis();
     }
 
     @Override
     public void update(double deltaTime) {
-        if (isDestroyed) return;
+        if (!isActive) return;
 
-        // 计算子弹移动距离
-        double moveStep = direction * Config.BULLET_SPEED * deltaTime;
-        x += moveStep;
-        // 累加飞行距离（取绝对值，无论左右都计算）
-        travelDistance += Math.abs(moveStep);
+        // 检查生命周期
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - creationTime > MAX_LIFETIME) {
+            isActive = false;
+            return;
+        }
 
-        // 超出屏幕范围则销毁
-        boolean isOutOfScreen = x < 0 || x > Config.SCREEN_WIDTH
-                || y < 0 || y > Config.SCREEN_HEIGHT;
-        if (isOutOfScreen) {
-            setDestroyed(true);
+        // 应用重力（如果是榴弹）
+        if (isExplosive) {
+            velocityY += Config.GRAVITY * 0.5;
+        }
+
+        // 更新位置
+        x += velocityX;
+        y += velocityY;
+
+        // 边界检查
+        if (x < -width || x > Config.WINDOW_WIDTH ||
+                y < -height || y > Config.WINDOW_HEIGHT) {
+            isActive = false;
         }
     }
 
     @Override
     public void render(GraphicsContext gc) {
-        if (isDestroyed) return;
+        if (!isActive) return;
 
-        // 渲染子弹为黄色矩形
-        gc.setFill(Color.YELLOW);
-        gc.fillRect(x, y, width, height);
+        gc.setFill(color);
+        if (isExplosive) {
+            // 绘制榴弹
+            gc.fillOval(x, y, width, height);
+            gc.setStroke(Color.DARKRED);
+            gc.setLineWidth(1);
+            gc.strokeOval(x, y, width, height);
+        } else {
+            // 绘制普通子弹
+            gc.fillRect(x, y, width, height);
+        }
+
+        // 如果即将爆炸，绘制闪烁效果
+        if (isExplosive && System.currentTimeMillis() % 200 < 100) {
+            gc.setStroke(Color.YELLOW);
+            gc.setLineWidth(2);
+            gc.strokeOval(x - 2, y - 2, width + 4, height + 4);
+        }
     }
 
     @Override
-    public boolean isDestroyed() {
-        return isDestroyed;
+    public void handleCollision(CollisionResult collision) {
+        // 子弹碰撞处理
+        if (isExplosive) {
+            explode();
+        } else {
+            isActive = false;
+        }
     }
 
-    @Override
-    public void setDestroyed(boolean destroyed) {
-        isDestroyed = destroyed;
+    private void explode() {
+        // TODO: 实现爆炸效果
+        // 1. 创建爆炸动画
+        // 2. 对范围内的敌人造成伤害
+        // 3. 播放爆炸音效
+
+        isActive = false;
     }
 
-    // ==================== 其他setter方法（可选） ====================
-    public void setX(double x) {
-        this.x = x;
-    }
+    // Getter和Setter方法
+    public int getDamage() { return damage; }
+    public void setDamage(int damage) { this.damage = damage; }
 
-    public void setY(double y) {
-        this.y = y;
-    }
+    public Color getColor() { return color; }
+    public void setColor(Color color) { this.color = color; }
 
-    public void setDirection(double direction) {
-        this.direction = direction;
+    public boolean isExplosive() { return isExplosive; }
+    public void setExplosive(boolean explosive) { isExplosive = explosive; }
+
+    public double getExplosionRadius() { return explosionRadius; }
+    public void setExplosionRadius(double explosionRadius) {
+        this.explosionRadius = explosionRadius;
     }
 }

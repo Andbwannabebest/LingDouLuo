@@ -1,154 +1,79 @@
+// src/main/java/com/lingdouluo/entity/Weapon.java
 package com.lingdouluo.entity;
 
-/**
- * 武器抽象父类，统一管理所有武器属性与行为
- */
+import javafx.scene.canvas.GraphicsContext;
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Weapon {
-    // 武器基础属性
-    private String weaponName;       // 武器名称
-    private int maxUpgradeLevel;     // 最大升级等级
-    private int currentLevel = 1;    // 当前等级
-    private int damage;              // 伤害值
-    private float fireRate;          // 射速（冷却时间，秒/发）
-    private float bulletSpeed;       // 子弹速度（float类型，避免转换损失）
-    private int maxAmmo;             // 最大弹药量
-    private int currentAmmo;         // 当前弹药量
-    private long lastFireTime;       // 上次发射时间（毫秒）
+    protected Player owner;
+    protected List<Bullet> bullets;
+    protected int damage;
+    protected double fireRate; // 每秒发射数
+    protected double cooldown;
+    protected int maxAmmo;
+    protected int currentAmmo;
+    protected boolean isAutomatic;
 
-    // 构造器（匹配子类调用，子弹速度改为float）
-    public Weapon(String weaponName, int maxUpgradeLevel, int damage, float fireRate, float bulletSpeed, int maxAmmo) {
-        this.weaponName = weaponName;
-        this.maxUpgradeLevel = maxUpgradeLevel;
-        this.damage = damage;
-        this.fireRate = fireRate;
-        this.bulletSpeed = bulletSpeed;
-        this.maxAmmo = maxAmmo;
-        this.currentAmmo = maxAmmo;     // 初始弹药满额
-        this.lastFireTime = 0;
+    public Weapon(Player owner) {
+        this.owner = owner;
+        this.bullets = new ArrayList<>();
+        this.damage = 10;
+        this.fireRate = 5.0; // 每秒5发
+        this.cooldown = 0;
+        this.maxAmmo = 100;
+        this.currentAmmo = maxAmmo;
+        this.isAutomatic = true;
     }
 
-    // ==================== 通用方法 ====================
-    /**
-     * 判断是否可以发射（冷却完成 + 有弹药）
-     */
-    public boolean canFire() {
-        long currentTime = System.currentTimeMillis();
-        return (currentTime - lastFireTime) >= (fireRate * 1000) && currentAmmo > 0;
-    }
+    public abstract void shoot(boolean isFacingRight);
 
-    /**
-     * 发射方法（抽象方法，子类必须实现）
-     */
-    public abstract Bullet fire(Player player);
-
-    /**
-     * 升级武器（未达到最大等级时）
-     */
-    public void upgrade() {
-        if (currentLevel >= maxUpgradeLevel) {
-            return;
+    public void update(double deltaTime) {
+        // 更新冷却时间
+        if (cooldown > 0) {
+            cooldown -= deltaTime;
         }
-        currentLevel++;
-        updateAttributesAfterUpgrade();
+
+        // 更新子弹
+        List<Bullet> bulletsToRemove = new ArrayList<>();
+        for (Bullet bullet : bullets) {
+            bullet.update(deltaTime);
+            if (!bullet.isActive()) {
+                bulletsToRemove.add(bullet);
+            }
+        }
+        bullets.removeAll(bulletsToRemove);
     }
 
-    /**
-     * 升级后更新属性（抽象方法，子类实现具体逻辑）
-     */
-    protected abstract void updateAttributesAfterUpgrade();
-
-    // ==================== 弹药与冷却管理 ====================
-    /**
-     * 消耗弹药
-     */
-    public void consumeAmmo() {
-        if (currentAmmo > 0) {
-            currentAmmo--;
+    public void render(GraphicsContext gc) {
+        // 渲染所有活跃的子弹
+        for (Bullet bullet : bullets) {
+            bullet.render(gc);
         }
     }
 
-    /**
-     * 重置发射冷却时间
-     */
-    public void resetFireTimer() {
-        this.lastFireTime = System.currentTimeMillis();
+    protected boolean canShoot() {
+        return cooldown <= 0 && currentAmmo > 0;
     }
 
-    /**
-     * 补充弹药（不超过最大弹药量）
-     */
-    public void reload(int ammoAmount) {
-        currentAmmo = Math.min(currentAmmo + ammoAmount, maxAmmo);
+    protected void startCooldown() {
+        cooldown = 1.0 / fireRate;
+        currentAmmo--;
     }
 
-    // 补充：setAmmo方法（兼容子类调用）
-    public void setAmmo(int ammo) {
-        this.currentAmmo = Math.max(0, Math.min(ammo, maxAmmo)); // 限制弹药范围
-    }
+    // Getter和Setter方法
+    public int getDamage() { return damage; }
+    public double getFireRate() { return fireRate; }
+    public int getCurrentAmmo() { return currentAmmo; }
+    public int getMaxAmmo() { return maxAmmo; }
+    public List<Bullet> getBullets() { return bullets; }
 
-    // ==================== 新增：兼容getName()调用（解决符号缺失） ====================
-    public String getName() {
-        return this.weaponName;
-    }
-
-    // ==================== Getter & Setter ====================
-    public String getWeaponName() {
-        return weaponName;
-    }
-
-    public int getMaxUpgradeLevel() {
-        return maxUpgradeLevel;
-    }
-
-    public int getCurrentLevel() {
-        return currentLevel;
-    }
-
-    public int getDamage() {
-        return damage;
-    }
-
-    public void setDamage(int damage) {
-        this.damage = damage;
-    }
-
-    public float getFireRate() {
-        return fireRate;
-    }
-
-    public void setFireRate(float fireRate) {
-        this.fireRate = fireRate;
-    }
-
-    public float getBulletSpeed() {
-        return bulletSpeed;
-    }
-
-    public void setBulletSpeed(float bulletSpeed) {
-        this.bulletSpeed = bulletSpeed;
-    }
-
-    public int getMaxAmmo() {
-        return maxAmmo;
-    }
-
-    public void setMaxAmmo(int maxAmmo) {
-        this.maxAmmo = maxAmmo;
-    }
-
-    public int getCurrentAmmo() {
-        return currentAmmo;
-    }
-
-    public void setCurrentAmmo(int currentAmmo) {
-        this.currentAmmo = currentAmmo;
-    }
-
-    public long getLastFireTime() {
-        return lastFireTime;
-    }
-
-    public void setLastFireTime(long lastFireTime) {
-        this.lastFireTime = lastFireTime;
+    public void setDamage(int damage) { this.damage = damage; }
+    public void setFireRate(double fireRate) { this.fireRate = fireRate; }
+    public void addAmmo(int amount) {
+        currentAmmo += amount;
+        if (currentAmmo > maxAmmo) {
+            currentAmmo = maxAmmo;
+        }
     }
 }

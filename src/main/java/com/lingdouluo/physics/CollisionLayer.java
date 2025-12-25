@@ -1,12 +1,26 @@
+// src/main/java/com/lingdouluo/physics/CollisionLayer.java
 package com.lingdouluo.physics;
 
-/**
- * 碰撞层级枚举，用于区分不同类型实体的碰撞规则
- */
 public enum CollisionLayer {
-    PLAYER,    // 玩家层级
-    ENEMY,     // 敌人层级
-    BULLET,    // 子弹层级
-    PLATFORM,  // 平台层级
-    OTHER      // 其他层级
+    PLAYER(1),
+    ENEMY(2),
+    BULLET(4),
+    PLATFORM(8),
+    POWER_UP(16),
+    TRIGGER(32),
+    ALL(63);
+
+    private final int mask;
+
+    CollisionLayer(int mask) {
+        this.mask = mask;
+    }
+
+    public int getMask() {
+        return mask;
+    }
+
+    public boolean canCollideWith(CollisionLayer other) {
+        return (this.mask & other.mask) != 0;
+    }
 }
