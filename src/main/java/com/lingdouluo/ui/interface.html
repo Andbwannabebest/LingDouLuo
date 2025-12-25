@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>灵斗罗 - 游戏选择</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "微软雅黑", sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 50px;
+        }
+
+        .title {
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: #ff4500;
+        }
+
+        .game-config {
+            background-color: #2d2d2d;
+            padding: 30px;
+            border-radius: 10px;
+            width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .player-group {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .player-config {
+            width: 48%;
+            background-color: #3d3d3d;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .player-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #00bfff;
+        }
+
+        .input-item {
+            margin-bottom: 15px;
+        }
+
+        .input-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        .input-item input {
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background-color: #5d5d5d;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .char-select {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .char-btn {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #5d5d5d;
+            border-radius: 8px;
+            background-color: #4d4d4d;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .char-btn.selected {
+            border-color: #ff4500;
+            background-color: #ff5a26;
+        }
+
+        .char-btn img {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+
+        .level-select {
+            background-color: #3d3d3d;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .level-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #00bfff;
+        }
+
+        .level-btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .level-btn {
+            padding: 10px 20px;
+            border: 2px solid #5d5d5d;
+            border-radius: 8px;
+            background-color: #4d4d4d;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .level-btn.selected {
+            border-color: #ff4500;
+            background-color: #ff5a26;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff4500;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .start-btn:hover {
+            background-color: #ff5a26;
+        }
+
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a1a;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        #loadingScreen.active {
+            display: flex;
+        }
+
+        .loading-text {
+            font-size: 24px;
+            color: #ff4500;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1 class="title">灵斗罗 - 双人闯关</h1>
+
+<div class="game-config">
+    <!-- 玩家1配置 -->
+    <div class="player-group">
+        <div class="player-config">
+            <h2 class="player-title">玩家1（WASD移动 | J射击 | K跳跃）</h2>
+            <div class="input-item">
+                <label for="p1Name">玩家名称</label>
+                <input type="text" id="p1Name" placeholder="请输入玩家名称" value="凌云">
+            </div>
+            <div class="input-item">
+                <label>选择角色</label>
+                <div class="char-select">
+                    <div class="char-btn selected" data-char="warrior">
+                        <img src="images/warrior.png" alt="战士">
+                        <span>战士</span>
+                    </div>
+                    <div class="char-btn" data-char="tech">
+                        <img src="images/tech.png" alt="科技">
+                        <span>科技</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 玩家2配置 -->
+        <div class="player-config">
+            <h2 class="player-title">玩家2（方向键移动 | 1射击 | 2跳跃）</h2>
+            <div class="input-item">
+                <label for="p2Name">玩家名称</label>
+                <input type="text" id="p2Name" placeholder="请输入玩家名称" value="星尘">
+            </div>
+            <div class="input-item">
+                <label>选择角色</label>
+                <div class="char-select">
+                    <div class="char-btn" data-char="warrior">
+                        <img src="images/warrior.png" alt="战士">
+                        <span>战士</span>
+                    </div>
+                    <div class="char-btn selected" data-char="tech">
+                        <img src="images/tech.png" alt="科技">
+                        <span>科技</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 关卡选择 -->
+    <div class="level-select">
+        <h2 class="level-title">选择关卡</h2>
+        <div class="level-btn-group">
+            <div class="level-btn selected" data-level="factory">工厂区（默认）</div>
+            <!-- 可扩展其他关卡 -->
+        </div>
+    </div>
+
+    <!-- 开始游戏按钮 -->
+    <button class="start-btn" onclick="startGame()">开始游戏</button>
+</div>
+
+<!-- 加载界面 -->
+<div id="loadingScreen">
+    <div class="loading-text">游戏加载中...请稍候</div>
+</div>
+
+<script>
+    // 全局变量存储选择状态
+    let p1SelectedChar = "warrior";
+    let p2SelectedChar = "tech";
+    let selectedLevel = "factory";
+    let player1Name = "凌云";
+    let player2Name = "星尘";
+
+    // 玩家1角色选择
+    document.querySelectorAll(".player-config:first-child .char-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll(".player-config:first-child .char-btn").forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+            p1SelectedChar = this.getAttribute("data-char");
+        });
+    });
+
+    // 玩家2角色选择
+    document.querySelectorAll(".player-config:last-child .char-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll(".player-config:last-child .char-btn").forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+            p2SelectedChar = this.getAttribute("data-char");
+        });
+    });
+
+    // 关卡选择
+    document.querySelectorAll(".level-btn").forEach(btn => {
+        btn.addEventListener("click", function() {
+            document.querySelectorAll(".level-btn").forEach(b => b.classList.remove("selected"));
+            this.classList.add("selected");
+            selectedLevel = this.getAttribute("data-level");
+        });
+    });
+
+    // 监听玩家名称输入
+    document.getElementById("p1Name").addEventListener("input", function() {
+        player1Name = this.value.trim() || "凌云";
+    });
+
+    document.getElementById("p2Name").addEventListener("input", function() {
+        player2Name = this.value.trim() || "星尘";
+    });
+
+    // 开始游戏
+    function startGame() {
+        if (!selectedLevel) {
+            alert("请选择关卡！");
+            return;
+        }
+
+        // 获取最终选择数据
+        const gameData = {
+            p1Name: player1Name,
+            p2Name: player2Name,
+            p1Char: p1SelectedChar,
+            p2Char: p2SelectedChar,
+            level: selectedLevel
+        };
+        console.log("游戏配置：", gameData);
+
+        // 显示加载界面
+        document.getElementById("loadingScreen").classList.add("active");
+
+        // 模拟加载（实际项目中替换为真实资源加载）
+        setTimeout(() => {
+            // 传递数据给Java（需通过JavaFX WebView桥接）
+            if (window.gameApp) {
+                window.gameApp.startGameWithData(
+                    gameData.p1Name,
+                    gameData.p2Name,
+                    gameData.p1Char,
+                    gameData.p2Char,
+                    gameData.level
+                );
+            } else {
+                // 本地测试提示
+                alert("游戏已启动！（实际项目中请通过JavaFX WebView加载此页面）");
+                document.getElementById("loadingScreen").classList.remove("active");
+            }
+        }, 3000);
+    }
+</script>
+</body>
+</html>
