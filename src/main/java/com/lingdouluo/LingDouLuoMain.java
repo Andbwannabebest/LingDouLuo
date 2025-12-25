@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class LingDouLuoMain extends Application {
@@ -32,25 +33,31 @@ public class LingDouLuoMain extends Application {
             game = new LingDouLuoGame(gc);
 
             // 创建HUD
-            hud = new HUD(game.getPlayer());
+            hud = new HUD(game.getPlayer1(), game.getPlayer2());
 
             // 设置游戏循环
             gameLoop = new GameLoop(game);
 
             // 创建主布局
             BorderPane root = new BorderPane();
+
+            // 顶部区域：HUD
+            VBox topPanel = new VBox();
+            topPanel.getChildren().add(hud.createHUD());
+            root.setTop(topPanel);
+
+            // 中间区域：游戏画布
             root.setCenter(gameCanvas);
-            root.setTop(hud.createHUD());
 
             // 创建场景
-            Scene scene = new Scene(root, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT);
+            Scene scene = new Scene(root, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT + 150);
 
             // 设置输入处理
             scene.setOnKeyPressed(game.getInputManager()::handleKeyPressed);
             scene.setOnKeyReleased(game.getInputManager()::handleKeyReleased);
 
             // 配置舞台
-            primaryStage.setTitle("灵斗罗 - LingDouLuo");
+            primaryStage.setTitle("灵斗罗 - LingDouLuo (双人合作模式)");
             primaryStage.setScene(scene);
             primaryStage.setResizable(false);
             primaryStage.show();

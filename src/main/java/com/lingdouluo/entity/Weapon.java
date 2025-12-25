@@ -14,19 +14,28 @@ public abstract class Weapon {
     protected int maxAmmo;
     protected int currentAmmo;
     protected boolean isAutomatic;
+    protected boolean supportsCharging;
+    protected int chargedDamageMultiplier; // 蓄力伤害倍数
 
     public Weapon(Player owner) {
         this.owner = owner;
         this.bullets = new ArrayList<>();
         this.damage = 10;
-        this.fireRate = 5.0; // 每秒5发
+        this.fireRate = 10.0; // 每秒10发
         this.cooldown = 0;
         this.maxAmmo = 100;
         this.currentAmmo = maxAmmo;
         this.isAutomatic = true;
+        this.supportsCharging = false;
+        this.chargedDamageMultiplier = 3;
     }
 
     public abstract void shoot(boolean isFacingRight);
+
+    public void shootCharged(boolean isFacingRight) {
+        // 默认实现，子类可以重写
+        shoot(isFacingRight);
+    }
 
     public void update(double deltaTime) {
         // 更新冷却时间
@@ -53,12 +62,14 @@ public abstract class Weapon {
     }
 
     protected boolean canShoot() {
-        return cooldown <= 0 && currentAmmo > 0;
+        return cooldown <= 0 && (currentAmmo > 0 || maxAmmo == -1);
     }
 
     protected void startCooldown() {
         cooldown = 1.0 / fireRate;
-        currentAmmo--;
+        if (currentAmmo > 0) {
+            currentAmmo--;
+        }
     }
 
     // Getter和Setter方法
@@ -67,13 +78,19 @@ public abstract class Weapon {
     public int getCurrentAmmo() { return currentAmmo; }
     public int getMaxAmmo() { return maxAmmo; }
     public List<Bullet> getBullets() { return bullets; }
+    public boolean supportsCharging() { return supportsCharging; }
+    public int getChargedDamageMultiplier() { return chargedDamageMultiplier; }
 
     public void setDamage(int damage) { this.damage = damage; }
     public void setFireRate(double fireRate) { this.fireRate = fireRate; }
+    public void setSupportsCharging(boolean supportsCharging) { this.supportsCharging = supportsCharging; }
+
     public void addAmmo(int amount) {
-        currentAmmo += amount;
-        if (currentAmmo > maxAmmo) {
-            currentAmmo = maxAmmo;
+        if (maxAmmo != -1) {
+            currentAmmo += amount;
+            if (currentAmmo > maxAmmo) {
+                currentAmmo = maxAmmo;
+            }
         }
     }
 }

@@ -13,7 +13,7 @@ public class Level {
     private String name;
     private Color backgroundColor;
     private List<Platform> platforms;
-    private List<Enemy> enemies;
+    private List<PatrolEnemy> enemies;
     private List<Entity> entities;
     private Player player;
 
@@ -46,8 +46,8 @@ public class Level {
         player.update(deltaTime);
 
         // 更新敌人
-        List<Enemy> enemiesToRemove = new ArrayList<>();
-        for (Enemy enemy : enemies) {
+        List<PatrolEnemy> enemiesToRemove = new ArrayList<>();
+        for (PatrolEnemy enemy : enemies) {
             enemy.update(deltaTime);
 
             // 检查敌人是否死亡
@@ -79,7 +79,7 @@ public class Level {
         }
 
         // 绘制敌人
-        for (Enemy enemy : enemies) {
+        for (PatrolEnemy enemy : enemies) {
             enemy.render(gc);
         }
 
@@ -111,7 +111,7 @@ public class Level {
 
             for (Bullet bullet : player.getCurrentWeapon().getBullets()) {
                 // 检查子弹与每个敌人的碰撞
-                for (Enemy enemy : enemies) {
+                for (PatrolEnemy enemy : enemies) {
                     if (bullet.intersects(enemy) && bullet.isActive()) {
                         // 敌人受到伤害
                         enemy.takeDamage(bullet.getDamage());
@@ -141,7 +141,7 @@ public class Level {
         entities.add(platform);
     }
 
-    public void addEnemy(Enemy enemy) {
+    public void addEnemy(PatrolEnemy enemy) {
         enemies.add(enemy);
         entities.add(enemy);
     }

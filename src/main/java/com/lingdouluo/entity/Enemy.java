@@ -34,6 +34,10 @@ public class Enemy extends Entity {
         this.patrolDirection = 1; // 1表示向右，-1表示向左
     }
 
+    public Enemy() {
+        super();
+    }
+
     @Override
     public void update(double deltaTime) {
         if (!isActive) return;

@@ -8,10 +8,11 @@ public class RifleWeapon extends Weapon {
     public RifleWeapon(Player owner) {
         super(owner);
         this.damage = 10;
-        this.fireRate = 10.0; // 每秒10发
+        this.fireRate = 15.0; // 每秒15发，支持快速连续射击
         this.maxAmmo = -1; // 无限弹药
         this.currentAmmo = -1; // 无限弹药
         this.isAutomatic = true;
+        this.supportsCharging = false; // 步枪不支持蓄力
     }
 
     @Override
@@ -23,13 +24,14 @@ public class RifleWeapon extends Weapon {
         double bulletY = owner.getY() + owner.getHeight() / 2;
 
         // 子弹方向
-        double bulletSpeedX = isFacingRight ? 10 : -10;
+        double bulletSpeedX = isFacingRight ? 12 : -12;
 
         // 创建子弹
         Bullet bullet = new Bullet(bulletX, bulletY, 8, 8);
         bullet.setVelocityX(bulletSpeedX);
         bullet.setDamage(damage);
         bullet.setColor(Color.LIGHTBLUE);
+        bullet.setOwner(owner);
 
         bullets.add(bullet);
         startCooldown();

@@ -15,12 +15,20 @@ public class SaveSystem {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final String SAVE_FILE = Config.SAVES_PATH + "save1.json";
 
-    public static void saveGame(Player player, int currentLevel, double gameTime) {
+    public static void saveGame(Player player1, Player player2, int currentLevel, double gameTime) {
         SaveData saveData = new SaveData();
 
-        saveData.setPlayerHealth(player.getHealth());
-        saveData.setPlayerLives(player.getLives());
-        saveData.setPlayerScore(player.getScore());
+        // 保存玩家1数据
+        saveData.setPlayer1Health(player1.getHealth());
+        saveData.setPlayer1Lives(player1.getLives());
+        saveData.setPlayer1Score(player1.getScore());
+
+        // 保存玩家2数据
+        saveData.setPlayer2Health(player2.getHealth());
+        saveData.setPlayer2Lives(player2.getLives());
+        saveData.setPlayer2Score(player2.getScore());
+
+        // 保存游戏进度
         saveData.setCurrentLevel(currentLevel);
         saveData.setGameTime(gameTime);
         saveData.setSaveTimestamp(System.currentTimeMillis());

@@ -25,6 +25,10 @@ public abstract class Entity {
         this.isOnGround = false;
     }
 
+    public Entity() {
+
+    }
+
     public abstract void update(double deltaTime);
     public abstract void render(GraphicsContext gc);
     public abstract void handleCollision(CollisionResult collision);

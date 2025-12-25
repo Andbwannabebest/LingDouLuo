@@ -3,48 +3,69 @@ package com.lingdouluo.save;
 
 public class SaveData {
 
-    private int playerHealth;
-    private int playerMaxHealth;
-    private int playerLives;
-    private int playerScore;
+    // 玩家1数据
+    private int player1Health;
+    private int player1MaxHealth;
+    private int player1Lives;
+    private int player1Score;
+
+    // 玩家2数据
+    private int player2Health;
+    private int player2MaxHealth;
+    private int player2Lives;
+    private int player2Score;
+
+    // 游戏进度
     private int currentLevel;
     private double gameTime;
     private long saveTimestamp;
 
     // 武器信息
-    private String currentWeapon;
-    private int rifleAmmo;
-    private int grenadeAmmo;
-
-    // 游戏进度
-    private boolean[] levelCompleted;
+    private String player1Weapon;
+    private String player2Weapon;
 
     public SaveData() {
-        this.playerHealth = 3;
-        this.playerMaxHealth = 3;
-        this.playerLives = 3;
-        this.playerScore = 0;
+        this.player1Health = 3;
+        this.player1MaxHealth = 3;
+        this.player1Lives = 3;
+        this.player1Score = 0;
+
+        this.player2Health = 3;
+        this.player2MaxHealth = 3;
+        this.player2Lives = 3;
+        this.player2Score = 0;
+
         this.currentLevel = 0;
         this.gameTime = 0;
         this.saveTimestamp = System.currentTimeMillis();
-        this.currentWeapon = "rifle";
-        this.rifleAmmo = -1; // 无限
-        this.grenadeAmmo = 20;
-        this.levelCompleted = new boolean[4]; // 4个关卡
+        this.player1Weapon = "rifle";
+        this.player2Weapon = "rifle";
     }
 
     // Getter和Setter方法
-    public int getPlayerHealth() { return playerHealth; }
-    public void setPlayerHealth(int playerHealth) { this.playerHealth = playerHealth; }
+    public int getPlayer1Health() { return player1Health; }
+    public void setPlayer1Health(int player1Health) { this.player1Health = player1Health; }
 
-    public int getPlayerMaxHealth() { return playerMaxHealth; }
-    public void setPlayerMaxHealth(int playerMaxHealth) { this.playerMaxHealth = playerMaxHealth; }
+    public int getPlayer1MaxHealth() { return player1MaxHealth; }
+    public void setPlayer1MaxHealth(int player1MaxHealth) { this.player1MaxHealth = player1MaxHealth; }
 
-    public int getPlayerLives() { return playerLives; }
-    public void setPlayerLives(int playerLives) { this.playerLives = playerLives; }
+    public int getPlayer1Lives() { return player1Lives; }
+    public void setPlayer1Lives(int player1Lives) { this.player1Lives = player1Lives; }
 
-    public int getPlayerScore() { return playerScore; }
-    public void setPlayerScore(int playerScore) { this.playerScore = playerScore; }
+    public int getPlayer1Score() { return player1Score; }
+    public void setPlayer1Score(int player1Score) { this.player1Score = player1Score; }
+
+    public int getPlayer2Health() { return player2Health; }
+    public void setPlayer2Health(int player2Health) { this.player2Health = player2Health; }
+
+    public int getPlayer2MaxHealth() { return player2MaxHealth; }
+    public void setPlayer2MaxHealth(int player2MaxHealth) { this.player2MaxHealth = player2MaxHealth; }
+
+    public int getPlayer2Lives() { return player2Lives; }
+    public void setPlayer2Lives(int player2Lives) { this.player2Lives = player2Lives; }
+
+    public int getPlayer2Score() { return player2Score; }
+    public void setPlayer2Score(int player2Score) { this.player2Score = player2Score; }
 
     public int getCurrentLevel() { return currentLevel; }
     public void setCurrentLevel(int currentLevel) { this.currentLevel = currentLevel; }
@@ -55,34 +76,15 @@ public class SaveData {
     public long getSaveTimestamp() { return saveTimestamp; }
     public void setSaveTimestamp(long saveTimestamp) { this.saveTimestamp = saveTimestamp; }
 
-    public String getCurrentWeapon() { return currentWeapon; }
-    public void setCurrentWeapon(String currentWeapon) { this.currentWeapon = currentWeapon; }
+    public String getPlayer1Weapon() { return player1Weapon; }
+    public void setPlayer1Weapon(String player1Weapon) { this.player1Weapon = player1Weapon; }
 
-    public int getRifleAmmo() { return rifleAmmo; }
-    public void setRifleAmmo(int rifleAmmo) { this.rifleAmmo = rifleAmmo; }
-
-    public int getGrenadeAmmo() { return grenadeAmmo; }
-    public void setGrenadeAmmo(int grenadeAmmo) { this.grenadeAmmo = grenadeAmmo; }
-
-    public boolean[] getLevelCompleted() { return levelCompleted; }
-    public void setLevelCompleted(boolean[] levelCompleted) { this.levelCompleted = levelCompleted; }
-
-    public boolean isLevelCompleted(int levelIndex) {
-        if (levelIndex >= 0 && levelIndex < levelCompleted.length) {
-            return levelCompleted[levelIndex];
-        }
-        return false;
-    }
-
-    public void setLevelCompleted(int levelIndex, boolean completed) {
-        if (levelIndex >= 0 && levelIndex < levelCompleted.length) {
-            levelCompleted[levelIndex] = completed;
-        }
-    }
+    public String getPlayer2Weapon() { return player2Weapon; }
+    public void setPlayer2Weapon(String player2Weapon) { this.player2Weapon = player2Weapon; }
 
     @Override
     public String toString() {
-        return String.format("SaveData{level=%d, health=%d, score=%d, time=%.1f}",
-                currentLevel, playerHealth, playerScore, gameTime);
+        return String.format("SaveData{level=%d, p1Health=%d, p2Health=%d, time=%.1f}",
+                currentLevel, player1Health, player2Health, gameTime);
     }
 }
