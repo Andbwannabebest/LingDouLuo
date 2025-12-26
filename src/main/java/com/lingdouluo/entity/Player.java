@@ -1,324 +1,331 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
-import com.lingdouluo.config.Config;
-import com.lingdouluo.physics.CollisionLayer;
-import com.lingdouluo.GameLoop;
-//import com.lingdouluo.weapon.GrenadeWeapon; // 新增：导入GrenadeWeapon类
+
+
+import lingdouluo.config.Config;
+import lingdouluo.physics.CollisionLayer;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.KeyCode;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 public class Player implements Entity {
-    // 成员变量
+    // 现有成员变量保持不变...
     private String name;
     private String characterType;
-    private double x;
-    private double y;
-    private double width;
-    private double height;
-    private int health;
-    private int maxHealth; // 最大生命值
-    private double yVelocity; // 下落速度
-    private boolean isDestroyed;
-    private boolean isOnPlatform; // 是否在平台上
-    // 按键状态（用于持续移动）
-    private boolean isLeftPressed;
-    private boolean isRightPressed;
-    // 玩家朝向（默认朝右）
-    private boolean facingRight = true;
-    // 当前持有武器
+    private double x, y, width, height;
+    private int health, maxHealth;
+    private double yVelocity;
+    private boolean isDestroyed, isOnPlatform;
+    private boolean isMovingLeft = false, isMovingRight = false, facingRight = true;
     private Weapon currentWeapon;
 
-    // 构造器
-    public Player(String name, String characterType) {
+    // 添加平台列表成员变量
+    private List<Platform> platforms;
+    private boolean wasOnPlatform = false;  // 上一帧是否在平台上
+    // 新增：图片资源相关
+    private Map<String, Image> playerImages;
+    private String currentAction;
+    private String playerId; // "player1" 或 "player2"
+    private long lastAnimationUpdate;
+    private int currentFrameIndex;
+
+    // 修改构造器
+    public Player(String playerId, String name, String characterType) {
+        this.playerId = playerId;
         this.name = name;
         this.characterType = characterType;
         this.x = Config.PLAYER_INIT_X;
         this.y = Config.PLAYER_INIT_Y;
         this.width = Config.PLAYER_WIDTH;
         this.height = Config.PLAYER_HEIGHT;
-        this.maxHealth = Config.PLAYER_INIT_HEALTH; // 初始化最大生命值
-        this.health = this.maxHealth; // 当前生命值默认等于最大生命值
+        this.maxHealth = Config.PLAYER_INIT_HEALTH;
+        this.health = this.maxHealth;
         this.yVelocity = 0;
         this.isDestroyed = false;
         this.isOnPlatform = false;
-        this.isLeftPressed = false;
-        this.isRightPressed = false;
-        // 初始给玩家分配一把步枪
+
         this.currentWeapon = new RifleWeapon();
+
+        // 初始化图片资源
+        this.playerImages = new HashMap<>();
+        this.currentAction = "initialize";
+        this.lastAnimationUpdate = System.currentTimeMillis();
+        this.currentFrameIndex = 0;
+        loadPlayerImages();
     }
 
-    // ==================== 按键处理方法 ====================
-    public void handleKeyPress(KeyEvent event) {
-        KeyCode code = event.getCode();
-        switch (code) {
-            case A:
-            case LEFT:
-                isLeftPressed = true;
-                break;
-            case D:
-            case RIGHT:
-                isRightPressed = true;
-                break;
-            case W:
-            case UP:
-            case SPACE:
-                jump(); // 触发跳跃
-                break;
-            case F:
-                // 发射当前武器
-                fireCurrentWeapon();
-                break;
-            case R:
-                // 装填当前武器
-                reloadCurrentWeapon();
-                break;
-            case G:
-                // 切换到手榴弹武器
-                switchToGrenadeWeapon();
-                break;
+    // 或者添加setter方法
+    public void setPlatforms(List<Platform> platforms) {
+        this.platforms = platforms;
+    }
+
+    // 新增：加载玩家图片资源
+    private void loadPlayerImages() {
+        try {
+            // 加载所有动作图片
+            String[] actions = {"initialize", "run1", "run2", "run3", "jump1", "jump2", "jump3", "up", "down"};
+            String[] directions = {"left", "right"};
+
+            for (String action : actions) {
+                for (String direction : directions) {
+                    String imagePath = "/" + playerId + "/" + direction + "/" + action + ".png";
+                    Image image = new Image(getClass().getResourceAsStream(imagePath));
+                    String key = direction + "_" + action;
+                    playerImages.put(key, image);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("加载玩家图片失败: " + e.getMessage());
+            // 如果图片加载失败，游戏仍能正常运行（使用矩形渲染）
         }
     }
 
-    public void handleKeyRelease(KeyEvent event) {
-        KeyCode code = event.getCode();
-        switch (code) {
-            case A:
-            case LEFT:
-                isLeftPressed = false;
-                break;
-            case D:
-            case RIGHT:
-                isRightPressed = false;
-                break;
-        }
-    }
-
-    // 跳跃逻辑
-    private void jump() {
-        if (isOnPlatform && !isDestroyed) {
-            yVelocity = Config.PLAYER_JUMP_FORCE;
-            isOnPlatform = false;
-        }
-    }
-
-    // 发射当前持有武器
-    private void fireCurrentWeapon() {
-        if (currentWeapon == null || isDestroyed) {
-            return;
-        }
-        Bullet bullet = currentWeapon.fire(this);
-        // 若子弹生成成功，可通过GameLoop添加到游戏中（此处预留扩展）
-    }
-
-    // 装填当前持有武器
-    private void reloadCurrentWeapon() {
-        if (currentWeapon == null || isDestroyed) {
-            return;
-        }
-        if (currentWeapon instanceof RifleWeapon) {
-            ((RifleWeapon) currentWeapon).reload();
-        } else if (currentWeapon instanceof GrenadeWeapon) {
-            currentWeapon.reload(currentWeapon.getMaxAmmo());
-        }
-    }
-
-    // 新增：切换到手榴弹武器
-    private void switchToGrenadeWeapon() {
-        this.currentWeapon = new GrenadeWeapon();
-        System.out.println("已切换为：" + currentWeapon.getName());
-    }
-
-    // ==================== Entity接口实现 ====================
-    @Override
-    public double getX() {
-        return x;
-    }
-
-    @Override
-    public double getY() {
-        return y;
-    }
-
-    @Override
-    public double getWidth() {
-        return width;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
-    public CollisionLayer getCollisionLayer() {
-        return CollisionLayer.PLAYER;
-    }
-
+    // 修改update方法，添加动画状态更新
     @Override
     public void update(double deltaTime) {
         if (isDestroyed) return;
 
-        // 处理左右移动
+        // 水平移动
         double moveSpeed = 0;
-        if (isLeftPressed) moveSpeed -= Config.PLAYER_MOVE_SPEED;
-        if (isRightPressed) moveSpeed += Config.PLAYER_MOVE_SPEED;
+        if (isMovingLeft) moveSpeed -= Config.PLAYER_MOVE_SPEED;
+        if (isMovingRight) moveSpeed += Config.PLAYER_MOVE_SPEED;
         x += moveSpeed * deltaTime;
 
-        // 根据移动方向更新朝向
+        // 更新朝向
         if (moveSpeed > 0) {
-            facingRight = true; // 向右移动，朝右
+            facingRight = true;
         } else if (moveSpeed < 0) {
-            facingRight = false; // 向左移动，朝左
+            facingRight = false;
         }
 
-        // 重力逻辑
-        if (!isOnPlatform) {
-            yVelocity += Config.PLAYER_GRAVITY * deltaTime;
-            y += yVelocity * deltaTime;
-        } else {
-            isOnPlatform = false; // 重置平台状态
+        // 重力和垂直移动
+        yVelocity += Config.PLAYER_GRAVITY * deltaTime;
+        y += yVelocity * deltaTime;
+
+        // 重置平台状态
+        isOnPlatform = false;
+
+        // 平台碰撞检测
+        if (platforms != null) {
+            for (Platform platform : platforms) {
+                if (checkPlatformCollision(platform, yVelocity)) {
+                    isOnPlatform = true;
+                    yVelocity = 0;
+                    y = platform.getY() - height;
+                    break; // 找到一个平台就停止检测
+                }
+            }
         }
 
-        // 边界检测
-        if (y + height > Config.SCREEN_HEIGHT) {
+        // 边界检测（作为备用地板）
+        boolean onGround = y + height >= Config.SCREEN_HEIGHT;
+        if (onGround) {
             y = Config.SCREEN_HEIGHT - height;
             yVelocity = 0;
             isOnPlatform = true;
         }
+
+        // 边界限制
         if (x < 0) x = 0;
         if (x + width > Config.SCREEN_WIDTH) x = Config.SCREEN_WIDTH - width;
+        if (y < 0) {
+            y = 0;
+            yVelocity = 0;
+        }
+
+        // 更新动画状态
+        updateAnimationState();
     }
 
-    // 重载update方法（兼容需传入GameLoop的场景）
-    public void update(double deltaTime, GameLoop gameLoop) {
-        this.update(deltaTime);
-        // 如需通过GameLoop发射子弹等逻辑，可在此扩展
+    private boolean checkPlatformCollision(Platform platform, double currentYVelocity) {
+        // 简单的平台碰撞检测
+        boolean horizontalOverlap = x < platform.getX() + platform.getWidth() &&
+                x + width > platform.getX();
+
+        // 检测玩家底部是否接近平台顶部
+        double playerBottom = y + height;
+        double platformTop = platform.getY();
+
+        // 当玩家底部接近平台顶部，且正在下落时
+        boolean verticallyClose = playerBottom >= platformTop - 5 &&
+                playerBottom <= platformTop + 5;
+
+        return horizontalOverlap && verticallyClose && currentYVelocity >= 0;
     }
 
+    // 新增：更新动画状态
+    // Player.java - 更新 updateAnimationState 方法
+    private void updateAnimationState() {
+        long currentTime = System.currentTimeMillis();
+
+        // 如果在平台上
+        if (isOnPlatform) {
+            if (isMovingLeft || isMovingRight) {
+                // 移动状态 - 跑步动画
+                if (currentTime - lastAnimationUpdate > 100) { // 每100ms切换一帧
+                    currentFrameIndex = (currentFrameIndex + 1) % 3;
+                    lastAnimationUpdate = currentTime;
+                }
+                currentAction = "run" + (currentFrameIndex + 1);
+            } else {
+                // 站立状态
+                currentAction = "initialize";
+                currentFrameIndex = 0; // 重置帧索引
+            }
+        } else {
+            // 跳跃/下落状态
+            if (currentTime - lastAnimationUpdate > 150) { // 每150ms切换一帧
+                currentFrameIndex = (currentFrameIndex + 1) % 3;
+                lastAnimationUpdate = currentTime;
+            }
+            currentAction = "jump" + (currentFrameIndex + 1);
+        }
+
+        // 调试输出
+        System.out.println("当前状态: " + currentAction +
+                " | 在平台: " + isOnPlatform +
+                " | 速度Y: " + yVelocity);
+    }
+
+    // 修改render方法，使用图片渲染
     @Override
     public void render(GraphicsContext gc) {
         if (isDestroyed) return;
 
-        // 按角色类型渲染颜色
-        Color playerColor = "warrior".equals(characterType) ? Color.BLUE : Color.GREEN;
-        gc.setFill(playerColor);
-        gc.fillRect(x, y, width, height);
+        String direction = facingRight ? "right" : "left";
+        String imageKey = direction + "_" + currentAction;
+        Image currentImage = playerImages.get(imageKey);
 
-        // 渲染血量（显示当前/最大生命值）
+        if (currentImage != null) {
+            // 使用图片渲染
+            gc.drawImage(currentImage, x, y, width, height);
+        } else {
+            // 图片加载失败时使用备用颜色渲染
+            Color playerColor = "warrior".equals(characterType) ? Color.BLUE : Color.GREEN;
+            gc.setFill(playerColor);
+            gc.fillRect(x, y, width, height);
+            // 显示图片加载失败信息
+            gc.setFill(Color.RED);
+            gc.fillText("Image missing: " + imageKey, x, y - 20);
+        }
+
+        // 临时调试：显示平台状态
+        gc.setFill(Color.YELLOW);
+        gc.setFont(javafx.scene.text.Font.font(10));
+        gc.fillText("OnPlatform: " + isOnPlatform + " Action: " + currentAction,
+                x, y - 30);
+
+        // 保留原有的UI元素（血量、名字等）
         gc.setFill(Color.WHITE);
         gc.setFont(javafx.scene.text.Font.font(12));
         gc.fillText(name + " HP: " + health + "/" + maxHealth, x, y - 10);
 
-        // 渲染当前武器信息（兼容getName()方法）
-        if (currentWeapon != null) {
-            gc.fillText("武器: " + currentWeapon.getName() + " 弹药: " + currentWeapon.getCurrentAmmo() + "/" + currentWeapon.getMaxAmmo(), x, y - 30);
+        // 跳跃状态指示器
+        if (!isOnPlatform) {
+            gc.setFill(yVelocity < 0 ? Color.CYAN : Color.ORANGE);
+            gc.fillText(yVelocity < 0 ? "↑" : "↓", x + width/2 - 5, y - 20);
         }
     }
 
-    @Override
-    public boolean isDestroyed() {
-        return isDestroyed;
+    // 其他方法保持不变...
+
+    // 注意：如果 Entity 接口没有定义 jump 方法，请移除 @Override 注解
+    // Player.java - 修改jump方法
+    // Player.java - 修改jump方法
+    public void jump() {
+        if (isDestroyed) return;
+
+        System.out.println("jump()被调用 - isOnPlatform: " + isOnPlatform + ", yVelocity: " + yVelocity);
+
+        // 方法1：直接检查是否可以跳跃（不依赖isOnPlatform字段）
+        boolean canJump = checkIfCanJump();
+
+        if (canJump) {
+            yVelocity = Config.PLAYER_JUMP_FORCE;
+            isOnPlatform = false;
+
+            // 强制切换到跳跃动画起始帧
+            currentAction = "jump1";
+            currentFrameIndex = 0;
+            lastAnimationUpdate = System.currentTimeMillis();
+
+            System.out.println("跳跃成功触发! 当前动作: " + currentAction + ", 速度Y: " + yVelocity);
+        } else {
+            System.out.println("跳跃失败: 不在平台上, yVelocity=" + yVelocity);
+        }
     }
 
-    @Override
-    public void setDestroyed(boolean destroyed) {
-        isDestroyed = destroyed;
+    // 添加辅助方法：检查是否可以跳跃
+    private boolean checkIfCanJump() {
+        // 如果isOnPlatform为true，肯定可以跳
+        if (isOnPlatform) {
+            return true;
+        }
+
+        // 如果速度很小（接近静止），重新检测平台碰撞
+        if (Math.abs(yVelocity) < 10) {
+            if (platforms != null) {
+                for (Platform platform : platforms) {
+                    if (checkPlatformCollision(platform, 0)) { // 用0速度检测
+                        isOnPlatform = true; // 更新状态
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
-    // ==================== 自定义方法 ====================
+
     public void takeDamage(int damage) {
-        this.health -= damage;
-        if (health <= 0) {
-            health = 0;
-            setDestroyed(true);
-        }
+        if (isDestroyed) return;
+        this.health = Math.max(0, this.health - damage);
+        if (this.health <= 0) setDestroyed(true);
     }
 
-    // 恢复生命值（不超过最大生命值）
-    public void heal(int healAmount) {
-        this.health = Math.min(health + healAmount, maxHealth);
+    @Override
+    public boolean isCollidingWith(Entity other) {
+        if (isDestroyed || other.isDestroyed()) return false;
+        return this.getX() < other.getX() + other.getWidth() &&
+                this.getX() + this.getWidth() > other.getX() &&
+                this.getY() < other.getY() + other.getHeight() &&
+                this.getY() + this.getHeight() > other.getY();
     }
 
-    // ==================== 缺失方法补充 ====================
-    // 获取最大生命值
-    public int getMaxHealth() {
-        return maxHealth;
-    }
+    // Entity接口实现保持不变...
+    @Override public double getX() { return x; }
+    @Override public double getY() { return y; }
+    @Override public double getWidth() { return width; }
+    @Override public double getHeight() { return height; }
+    @Override public CollisionLayer getCollisionLayer() { return CollisionLayer.PLAYER; }
+    @Override public boolean isDestroyed() { return isDestroyed; }
+    @Override public void setDestroyed(boolean destroyed) { isDestroyed = destroyed; }
 
-    // 获取当前持有武器
-    public Weapon getCurrentWeapon() {
-        return currentWeapon;
-    }
-
-    // ==================== Getter & Setter ====================
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCharacterType() {
-        return characterType;
-    }
-
-    public void setCharacterType(String characterType) {
-        this.characterType = characterType;
-    }
-
-    public int getHealth() {
-        return health;
-    }
-
-    public void setHealth(int health) {
-        this.health = Math.max(0, Math.min(health, maxHealth));
-        if (this.health <= 0) {
-            setDestroyed(true);
-        }
-    }
-
-    public void setMaxHealth(int maxHealth) {
-        this.maxHealth = maxHealth;
-        // 最大生命值变更后，当前生命值不超过新的最大值
-        this.health = Math.min(this.health, maxHealth);
-    }
-
-    public double getYVelocity() {
-        return yVelocity;
-    }
-
-    public void setYVelocity(double yVelocity) {
-        this.yVelocity = yVelocity;
-    }
-
-    public boolean isOnPlatform() {
-        return isOnPlatform;
-    }
-
-    public void setOnPlatform(boolean onPlatform) {
-        isOnPlatform = onPlatform;
-    }
-
-    public boolean isFacingRight() {
-        return facingRight;
-    }
-
-    public void setFacingRight(boolean facingRight) {
-        this.facingRight = facingRight;
-    }
-
-    public void setCurrentWeapon(Weapon currentWeapon) {
-        this.currentWeapon = currentWeapon;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
+    // Getter & Setter保持不变...
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public String getCharacterType() { return characterType; }
+    public void setCharacterType(String characterType) { this.characterType = characterType; }
+    public int getHealth() { return health; }
+    public void setHealth(int health) { this.health = Math.max(0, Math.min(health, maxHealth)); }
+    public int getMaxHealth() { return maxHealth; }
+    public void setMaxHealth(int maxHealth) { this.maxHealth = maxHealth; }
+    public double getYVelocity() { return yVelocity; }
+    public void setYVelocity(double yVelocity) { this.yVelocity = yVelocity; }
+    public boolean isOnPlatform() { return isOnPlatform; }
+    public void setOnPlatform(boolean onPlatform) { isOnPlatform = onPlatform; }
+    public boolean isMovingLeft() { return isMovingLeft; }
+    public void setMovingLeft(boolean movingLeft) { isMovingLeft = movingLeft; }
+    public boolean isMovingRight() { return isMovingRight; }
+    public void setMovingRight(boolean movingRight) { isMovingRight = movingRight; }
+    public boolean isFacingRight() { return facingRight; }
+    public void setFacingRight(boolean facingRight) { this.facingRight = facingRight; }
+    public Weapon getCurrentWeapon() { return currentWeapon; }
+    public void setCurrentWeapon(Weapon currentWeapon) { this.currentWeapon = currentWeapon; }
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
 }

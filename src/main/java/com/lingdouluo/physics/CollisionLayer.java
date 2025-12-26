@@ -1,4 +1,4 @@
-package com.lingdouluo.physics;
+package lingdouluo.physics;
 
 /**
  * 碰撞层级枚举，用于区分不同类型实体的碰撞规则

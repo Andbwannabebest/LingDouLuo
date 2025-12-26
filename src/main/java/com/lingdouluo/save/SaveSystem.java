@@ -1,6 +1,6 @@
-package com.lingdouluo.save;
+package lingdouluo.save;
 
-import com.lingdouluo.config.Config;
+import lingdouluo.config.Config;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;

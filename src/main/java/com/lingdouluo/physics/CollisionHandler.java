@@ -1,6 +1,6 @@
-package com.lingdouluo.physics;
+package lingdouluo.physics;
 
-import com.lingdouluo.entity.Entity;
+import lingdouluo.entity.Entity;
 
 /**
  * 碰撞处理器抽象类，定义碰撞回调方法

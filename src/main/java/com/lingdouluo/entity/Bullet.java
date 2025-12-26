@@ -1,7 +1,7 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
-import com.lingdouluo.config.Config;
-import com.lingdouluo.physics.CollisionLayer;
+import lingdouluo.config.Config;
+import lingdouluo.physics.CollisionLayer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -11,10 +11,10 @@ public class Bullet implements Entity {
     private double y;
     private double width;
     private double height;
-    private double direction; // 1=右，-1=左
+    private double direction;
     private int damage;
     private boolean isDestroyed;
-    private double travelDistance; // 子弹飞行距离（新增：解决找不到getTravelDistance()的错误）
+    private double travelDistance;
 
     // 构造器
     public Bullet(double x, double y, double direction) {
@@ -25,46 +25,10 @@ public class Bullet implements Entity {
         this.direction = direction;
         this.damage = Config.BULLET_DAMAGE;
         this.isDestroyed = false;
-        this.travelDistance = 0; // 初始化飞行距离为0
+        this.travelDistance = 0;
     }
 
-    // ==================== 补充缺失的getter方法 ====================
-    // 获取子弹飞行距离（解决找不到getTravelDistance()的错误）
-    public double getTravelDistance() {
-        return travelDistance;
-    }
-
-    // 获取子弹伤害值
-    public int getDamage() {
-        return damage;
-    }
-
-    // ==================== Entity接口实现 ====================
-    @Override
-    public double getX() {
-        return x;
-    }
-
-    @Override
-    public double getY() {
-        return y;
-    }
-
-    @Override
-    public double getWidth() {
-        return width;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
-    public CollisionLayer getCollisionLayer() {
-        return CollisionLayer.BULLET;
-    }
-
+    // 更新子弹状态
     @Override
     public void update(double deltaTime) {
         if (isDestroyed) return;
@@ -72,13 +36,14 @@ public class Bullet implements Entity {
         // 计算子弹移动距离
         double moveStep = direction * Config.BULLET_SPEED * deltaTime;
         x += moveStep;
-        // 累加飞行距离（取绝对值，无论左右都计算）
         travelDistance += Math.abs(moveStep);
 
         // 超出屏幕范围则销毁
-        boolean isOutOfScreen = x < 0 || x > Config.SCREEN_WIDTH
-                || y < 0 || y > Config.SCREEN_HEIGHT;
-        if (isOutOfScreen) {
+        boolean isOutOfScreen = x < -width || x > Config.SCREEN_WIDTH + width
+                || y < -height || y > Config.SCREEN_HEIGHT + height;
+        boolean isExceedRange = travelDistance > Config.BULLET_MAX_RANGE;
+
+        if (isOutOfScreen || isExceedRange) {
             setDestroyed(true);
         }
     }
@@ -90,28 +55,51 @@ public class Bullet implements Entity {
         // 渲染子弹为黄色矩形
         gc.setFill(Color.YELLOW);
         gc.fillRect(x, y, width, height);
+
+        // 添加子弹轨迹效果
+        gc.setFill(Color.ORANGE);
+        for (int i = 0; i < 3; i++) {
+            double trailX = x - (i + 1) * direction * 5;
+            if (trailX >= 0 && trailX <= Config.SCREEN_WIDTH) {
+                gc.fillRect(trailX, y, 2, height);
+            }
+        }
     }
 
+    // 碰撞检测（改进版）
     @Override
-    public boolean isDestroyed() {
-        return isDestroyed;
+    public boolean isCollidingWith(Entity other) {
+        if (this.isDestroyed() || other.isDestroyed()) return false;
+
+        // 使用更精确的碰撞检测，增加碰撞框大小
+        double expand = 2.0; // 扩大碰撞框
+
+        return this.getX() - expand < other.getX() + other.getWidth() &&
+                this.getX() + this.getWidth() + expand > other.getX() &&
+                this.getY() - expand < other.getY() + other.getHeight() &&
+                this.getY() + this.getHeight() + expand > other.getY();
     }
 
+    // ==================== Entity接口实现 ====================
     @Override
-    public void setDestroyed(boolean destroyed) {
-        isDestroyed = destroyed;
-    }
+    public double getX() { return x; }
+    @Override
+    public double getY() { return y; }
+    @Override
+    public double getWidth() { return width; }
+    @Override
+    public double getHeight() { return height; }
+    @Override
+    public CollisionLayer getCollisionLayer() { return CollisionLayer.BULLET; }
+    @Override
+    public boolean isDestroyed() { return isDestroyed; }
+    @Override
+    public void setDestroyed(boolean destroyed) { isDestroyed = destroyed; }
 
-    // ==================== 其他setter方法（可选） ====================
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public void setDirection(double direction) {
-        this.direction = direction;
-    }
+    // ==================== Getter方法 ====================
+    public double getTravelDistance() { return travelDistance; }
+    public int getDamage() { return damage; }
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+    public void setDirection(double direction) { this.direction = direction; }
 }

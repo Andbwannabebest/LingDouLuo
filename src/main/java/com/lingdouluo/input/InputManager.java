@@ -1,4 +1,4 @@
-package com.lingdouluo.input;
+package lingdouluo.input;
 
 import javafx.scene.input.KeyCode;
 import java.util.HashSet;

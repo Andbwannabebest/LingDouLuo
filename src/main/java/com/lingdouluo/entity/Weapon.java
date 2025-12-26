@@ -1,4 +1,4 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
 /**
  * 武器抽象父类，统一管理所有武器属性与行为

@@ -1,6 +1,6 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
-import com.lingdouluo.physics.CollisionLayer;
+import lingdouluo.physics.CollisionLayer;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 

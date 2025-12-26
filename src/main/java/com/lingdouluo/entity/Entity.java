@@ -1,6 +1,6 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
-import com.lingdouluo.physics.CollisionLayer;
+import lingdouluo.physics.CollisionLayer;
 import javafx.scene.canvas.GraphicsContext;
 
 /**
@@ -24,6 +24,8 @@ public interface Entity {
 
     // 更新实体状态
     void update(double deltaTime);
+
+
 
     // 渲染实体
     void render(GraphicsContext gc);

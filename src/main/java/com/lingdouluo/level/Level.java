@@ -1,6 +1,6 @@
-package com.lingdouluo.level;
+package lingdouluo.level;
 
-import com.lingdouluo.config.Config;
+import lingdouluo.config.Config;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,17 +17,25 @@ public class Level {
         initPlatforms();
     }
 
-    // 初始化平台
+    // 初始化平台（调整平台高度，使其更容易跳上去）
     private void initPlatforms() {
         if ("factory".equals(levelName.toLowerCase())) {
-            platforms.add(new Platform(300, 800, 200, 20, false));
-            platforms.add(new Platform(600, 600, 150, 20, true));
-            platforms.add(new Platform(900, 400, 200, 20, false));
-            platforms.add(new Platform(1200, 700, 150, 20, true));
+            // 降低平台高度，使玩家更容易跳上去
+            platforms.add(new Platform(300, 900, 200, 20, false));  // 地面附近
+            platforms.add(new Platform(600, 700, 150, 20, true));   // 中等高度
+            platforms.add(new Platform(900, 500, 200, 20, false));  // 较高但可跳跃到达
+            platforms.add(new Platform(1200, 800, 150, 20, true)); // 回到较低高度
+
+            // 添加更多平台增加游戏性
+            platforms.add(new Platform(400, 600, 100, 20, false));
+            platforms.add(new Platform(1100, 400, 100, 20, true));
         } else {
-            platforms.add(new Platform(200, 700, 250, 20, false));
-            platforms.add(new Platform(500, 500, 200, 20, false));
-            platforms.add(new Platform(800, 300, 250, 20, false));
+            // 默认关卡平台配置
+            platforms.add(new Platform(200, 800, 250, 20, false));
+            platforms.add(new Platform(500, 600, 200, 20, false));
+            platforms.add(new Platform(800, 400, 250, 20, false));
+            platforms.add(new Platform(1100, 600, 200, 20, false));
+            platforms.add(new Platform(1400, 800, 250, 20, false));
         }
     }
 

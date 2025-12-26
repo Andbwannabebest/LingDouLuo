@@ -1,10 +1,11 @@
-package com.lingdouluo.ui;
+package lingdouluo.ui;
 
-import com.lingdouluo.entity.Player;
+import lingdouluo.LingDouluoGame;
+import lingdouluo.entity.Player;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import com.lingdouluo.config.Config;
+import lingdouluo.config.Config;
 
 public class HUD {
     private Player player;

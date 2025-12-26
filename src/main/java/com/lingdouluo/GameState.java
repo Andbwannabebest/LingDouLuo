@@ -1,18 +1,18 @@
-package com.lingdouluo;
+package lingdouluo;
 
-import com.lingdouluo.config.Config;
-import com.lingdouluo.entity.Bullet;
-import com.lingdouluo.entity.Enemy;
-import com.lingdouluo.entity.Entity;
-import com.lingdouluo.entity.Platform;
-import com.lingdouluo.entity.Player;
-import com.lingdouluo.save.SaveData;
-import com.lingdouluo.save.SaveSystem;
+import lingdouluo.config.Config;
+import lingdouluo.entity.Bullet;
+import lingdouluo.entity.Enemy;
+import lingdouluo.entity.Entity;
+import lingdouluo.entity.Platform;
+import lingdouluo.entity.Player;
+import lingdouluo.save.SaveData;
+import lingdouluo.save.SaveSystem;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import com.lingdouluo.physics.CollisionSystem;
-import com.lingdouluo.physics.CollisionResult;
+import lingdouluo.physics.CollisionSystem;
+import lingdouluo.physics.CollisionResult;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,8 +44,8 @@ public class GameState {
 
     public GameState() {
         // 初始化默认玩家
-        this.player1 = new Player("凌云", "warrior");
-        this.player2 = new Player("星尘", "tech");
+        this.player1 = new Player("player1","凌云", "warrior");
+        this.player2 = new Player("player2", "星尘", "tech");
         // 初始化实体列表
         this.enemies = new ArrayList<>();
         this.bullets = new ArrayList<>();
@@ -66,12 +66,10 @@ public class GameState {
      * 从前端更新玩家和关卡配置
      */
     public void updateFromUI(String p1Name, String p2Name, String p1Char, String p2Char, String level) {
-        this.player1.setName(p1Name);
-        this.player1.setCharacterType(p1Char);
-        this.player2.setName(p2Name);
-        this.player2.setCharacterType(p2Char);
+        // 重新创建玩家对象以确保图片正确加载
+        this.player1 = new Player("player1", p1Name, p1Char);
+        this.player2 = new Player("player2", p2Name, p2Char);
         this.currentLevel = level;
-        // 重新加载关卡（重置玩家状态）
         resetPlayerState();
         loadLevel(level);
     }

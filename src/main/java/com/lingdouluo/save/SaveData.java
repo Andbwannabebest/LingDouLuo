@@ -1,4 +1,4 @@
-package com.lingdouluo.save;
+package lingdouluo.save;
 
 /**
  * 存档数据封装类，存储游戏核心状态

@@ -1,8 +1,8 @@
-package com.lingdouluo.entity;
+package lingdouluo.weapon;
 
-import com.lingdouluo.entity.Bullet;
-import com.lingdouluo.entity.Player;
-import com.lingdouluo.entity.Weapon;
+import lingdouluo.entity.Bullet;
+import lingdouluo.entity.Player;
+import lingdouluo.entity.Weapon;
 
 /**
  * 手榴弹武器类，基于基础Weapon类实现，使用普通Bullet类，无自定义GrenadeBullet依赖

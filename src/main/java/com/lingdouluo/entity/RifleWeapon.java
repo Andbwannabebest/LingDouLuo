@@ -1,7 +1,7 @@
-package com.lingdouluo.entity;
+package lingdouluo.entity;
 
-import com.lingdouluo.entity.Bullet;
-import com.lingdouluo.entity.Player;
+import lingdouluo.entity.Bullet;
+import lingdouluo.entity.Player;
 
 /**
  * 步枪武器类，继承Weapon父类，解决所有编译错误
