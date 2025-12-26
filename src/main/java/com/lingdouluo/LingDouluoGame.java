@@ -57,21 +57,16 @@ public class LingDouLuoGame {
         // 初始化关卡
         createLevels();
 
-        // 初始化玩家1和玩家2
+        // 初始化玩家1和玩家2 - 确保出生在安全位置
         player1 = new Player(100, 500, 1);
         player2 = new Player(200, 500, 2);
 
         player1.setInputManager(inputManager);
         player2.setInputManager(inputManager);
 
-        // 给玩家添加更多武器
+        // 给玩家添加武器（魂斗罗风格初始只有步枪）
         player1.addWeapon(new RifleWeapon(player1));
-        player1.addWeapon(new GrenadeWeapon(player1));
-        player1.addWeapon(new ShotgunWeapon(player1));
-
         player2.addWeapon(new RifleWeapon(player2));
-        player2.addWeapon(new GrenadeWeapon(player2));
-        player2.addWeapon(new ShotgunWeapon(player2));
 
         // 加载第一关
         loadLevel(0);
@@ -86,7 +81,7 @@ public class LingDouLuoGame {
         factoryLevel.setBackgroundColor(Color.rgb(60, 60, 70));
         factoryLevel.setPlayerSpawn(100, 500);
 
-        // 添加平台 - 确保玩家出生在平台上
+        // 添加平台 - 确保玩家出生在安全位置
         factoryLevel.addPlatform(0, 600, 1280, 120);  // 地面
         factoryLevel.addPlatform(200, 500, 100, 20);  // 平台1
         factoryLevel.addPlatform(400, 450, 100, 20);  // 平台2
@@ -104,8 +99,22 @@ public class LingDouLuoGame {
         if (index >= 0 && index < levels.size()) {
             currentLevelIndex = index;
             currentLevel = levels.get(index);
+
+            // 确保玩家出生在安全位置
             player1.setPosition(currentLevel.getPlayerSpawnX(), currentLevel.getPlayerSpawnY());
             player2.setPosition(currentLevel.getPlayerSpawnX() + 100, currentLevel.getPlayerSpawnY());
+
+            player1.setActive(true);
+            player2.setActive(true);
+            player1.setHealth(player1.getMaxHealth());
+            player2.setHealth(player2.getMaxHealth());
+
+            // 重置玩家状态
+            player1.setVelocityX(0);
+            player1.setVelocityY(0);
+            player2.setVelocityX(0);
+            player2.setVelocityY(0);
+
             currentLevel.setPlayer(player1);
 
             // 创建敌人
@@ -113,6 +122,7 @@ public class LingDouLuoGame {
 
             Config.GAME_STATE = GameState.PLAYING;
             menuState = MenuState.PLAYING;
+            gameTime = 0;
         }
     }
 
@@ -121,13 +131,13 @@ public class LingDouLuoGame {
 
         // 创建巡逻敌人 - 确保敌人在平台上
         PatrolEnemy enemy1 = new PatrolEnemy(400, 550, 64, 64);
-        enemy1.setPatrolRange(100);
-        enemy1.setPatrolSpeed(1.5);
+        enemy1.setPatrolRange(80);
+        enemy1.setPatrolSpeed(1.0);
         enemies.add(enemy1);
 
         PatrolEnemy enemy2 = new PatrolEnemy(800, 300, 64, 64);
-        enemy2.setPatrolRange(80);
-        enemy2.setPatrolSpeed(2.0);
+        enemy2.setPatrolRange(60);
+        enemy2.setPatrolSpeed(0.8);
         enemies.add(enemy2);
 
         // 创建射击敌人
@@ -173,10 +183,10 @@ public class LingDouLuoGame {
     }
 
     private void handleMenuInput() {
-        // 处理暂停/继续
-        if (inputManager.isAnyPausePressed() && inputManager.isKeyJustPressed(
-                inputManager.isP1Pause() ? Config.KEY_P1_PAUSE :
-                        inputManager.isP2Pause() ? Config.KEY_P2_PAUSE : Config.KEY_ESCAPE)) {
+        // 处理暂停/继续 - 使用单独的按键检查
+        if (inputManager.isKeyJustPressed(Config.KEY_ESCAPE) ||
+                inputManager.isKeyJustPressed(Config.KEY_P1_PAUSE) ||
+                inputManager.isKeyJustPressed(Config.KEY_P2_PAUSE)) {
 
             if (menuState == MenuState.PLAYING) {
                 togglePause();
@@ -188,7 +198,7 @@ public class LingDouLuoGame {
         }
 
         // 处理返回主菜单
-        if (inputManager.isBackPressed() && inputManager.isKeyJustPressed(Config.KEY_BACK)) {
+        if (inputManager.isKeyJustPressed(Config.KEY_BACK)) {
             if (menuState == MenuState.PAUSE_MENU || menuState == MenuState.GAME_OVER ||
                     menuState == MenuState.LEVEL_COMPLETE) {
                 returnToMainMenu();
@@ -198,12 +208,20 @@ public class LingDouLuoGame {
         // 处理游戏内按键
         if (menuState == MenuState.PLAYING && !isPaused) {
             // R键重新开始
-            if (inputManager.isKeyPressed(82)) { // R键
+            if (inputManager.isKeyJustPressed(Config.KEY_RESTART)) {
                 restartGame();
             }
             // N键下一关
-            if (inputManager.isKeyPressed(78)) { // N键
+            if (inputManager.isKeyJustPressed(Config.KEY_NEXT_LEVEL)) {
                 nextLevel();
+            }
+            // S键保存
+            if (inputManager.isKeyJustPressed(Config.KEY_SAVE)) {
+                saveGame();
+            }
+            // L键加载
+            if (inputManager.isKeyJustPressed(Config.KEY_LOAD)) {
+                loadGame();
             }
         }
     }
@@ -216,7 +234,7 @@ public class LingDouLuoGame {
 
             // 更新敌人AI（朝向最近的玩家）
             Player targetPlayer = findNearestPlayer(enemy);
-            if (targetPlayer != null && enemy instanceof ShootingEnemy) {
+            if (targetPlayer != null && targetPlayer.isActive() && enemy instanceof ShootingEnemy) {
                 ((ShootingEnemy) enemy).setTarget(targetPlayer);
             }
 
@@ -233,15 +251,17 @@ public class LingDouLuoGame {
     }
 
     private Player findNearestPlayer(Enemy enemy) {
-        double distToP1 = Math.sqrt(
+        if (!player1.isActive() && !player2.isActive()) return null;
+
+        double distToP1 = player1.isActive() ? Math.sqrt(
                 Math.pow(enemy.getX() - player1.getX(), 2) +
                         Math.pow(enemy.getY() - player1.getY(), 2)
-        );
+        ) : Double.MAX_VALUE;
 
-        double distToP2 = Math.sqrt(
+        double distToP2 = player2.isActive() ? Math.sqrt(
                 Math.pow(enemy.getX() - player2.getX(), 2) +
                         Math.pow(enemy.getY() - player2.getY(), 2)
-        );
+        ) : Double.MAX_VALUE;
 
         return distToP1 < distToP2 ? player1 : player2;
     }
@@ -249,10 +269,10 @@ public class LingDouLuoGame {
     private void checkCollisions() {
         // 检查玩家与敌人的碰撞
         for (Enemy enemy : enemies) {
-            if (player1.intersects(enemy) && player1.isActive()) {
+            if (player1.isActive() && player1.intersects(enemy) && !player1.isInvincible()) {
                 player1.takeDamage(enemy.getDamage());
             }
-            if (player2.intersects(enemy) && player2.isActive()) {
+            if (player2.isActive() && player2.intersects(enemy) && !player2.isInvincible()) {
                 player2.takeDamage(enemy.getDamage());
             }
         }
@@ -262,11 +282,11 @@ public class LingDouLuoGame {
             if (enemy instanceof ShootingEnemy) {
                 ShootingEnemy shootingEnemy = (ShootingEnemy) enemy;
                 for (Bullet bullet : shootingEnemy.getBullets()) {
-                    if (player1.intersects(bullet) && bullet.isActive()) {
+                    if (player1.isActive() && player1.intersects(bullet) && bullet.isActive() && !player1.isInvincible()) {
                         player1.takeDamage(bullet.getDamage());
                         bullet.setActive(false);
                     }
-                    if (player2.intersects(bullet) && bullet.isActive()) {
+                    if (player2.isActive() && player2.intersects(bullet) && bullet.isActive() && !player2.isInvincible()) {
                         player2.takeDamage(bullet.getDamage());
                         bullet.setActive(false);
                     }
@@ -278,13 +298,13 @@ public class LingDouLuoGame {
         checkBulletCollisions(player1);
         checkBulletCollisions(player2);
 
-        // 检查玩家之间的碰撞（防止重叠）
+        // 检查玩家之间的碰撞（防止重叠）- 降低推开力度
         if (player1.intersects(player2)) {
             // 简单推开逻辑
             double dx = player1.getX() - player2.getX();
-            if (dx != 0) {
-                player1.setX(player1.getX() + dx * 0.05);
-                player2.setX(player2.getX() - dx * 0.05);
+            if (dx != 0 && Math.abs(dx) < 20) {
+                player1.setX(player1.getX() + dx * 0.02);
+                player2.setX(player2.getX() - dx * 0.02);
             }
         }
     }
@@ -413,16 +433,17 @@ public class LingDouLuoGame {
 
         // 操作说明 - 更新按键说明
         gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", 24));
-        gc.fillText("玩家1: WASD移动, 空格/K跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 250, 300);
-        gc.fillText("玩家2: 方向键移动, Ctrl/3跳跃, Alt/2射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 250, 340);
+        gc.setFont(Font.font("Arial", 20));
+        gc.fillText("玩家1: WASD移动, K/空格跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 250, 300);
+        gc.fillText("玩家2: 方向键移动, 3/Ctrl跳跃, 2/Alt射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 250, 340);
         gc.fillText("暂停: H(玩家1) 或 9(玩家2) 或 ESC", Config.WINDOW_WIDTH / 2 - 200, 380);
-        gc.fillText("返回主菜单: I", Config.WINDOW_WIDTH / 2 - 100, 420);
+        gc.fillText("返回主菜单: I, 重新开始: R, 下一关: N", Config.WINDOW_WIDTH / 2 - 200, 420);
+        gc.fillText("保存游戏: S, 加载游戏: L", Config.WINDOW_WIDTH / 2 - 120, 460);
 
         // 开始游戏提示
         gc.setFill(Color.LIME);
         gc.setFont(Font.font("Arial", 32));
-        gc.fillText("按 H 或 9 或 ESC 开始游戏", Config.WINDOW_WIDTH / 2 - 200, 500);
+        gc.fillText("按 H 或 9 或 ESC 开始游戏", Config.WINDOW_WIDTH / 2 - 200, 550);
 
         // 作者信息
         gc.setFill(Color.GRAY);
@@ -440,6 +461,25 @@ public class LingDouLuoGame {
                 " 生命数: " + player1.getLives(), 10, 80);
         gc.fillText("玩家2生命: " + player2.getHealth() + "/" + player2.getMaxHealth() +
                 " 生命数: " + player2.getLives(), 10, 100);
+
+        // 显示武器信息
+        if (player1.getCurrentWeapon() != null) {
+            gc.fillText("玩家1武器: " + getWeaponName(player1.getCurrentWeapon()) +
+                            " 弹药: " + (player1.getCurrentWeapon().getCurrentAmmo() == -1 ? "∞" : player1.getCurrentWeapon().getCurrentAmmo()),
+                    10, 120);
+        }
+        if (player2.getCurrentWeapon() != null) {
+            gc.fillText("玩家2武器: " + getWeaponName(player2.getCurrentWeapon()) +
+                            " 弹药: " + (player2.getCurrentWeapon().getCurrentAmmo() == -1 ? "∞" : player2.getCurrentWeapon().getCurrentAmmo()),
+                    10, 140);
+        }
+    }
+
+    private String getWeaponName(Weapon weapon) {
+        if (weapon instanceof RifleWeapon) return "步枪";
+        if (weapon instanceof ShotgunWeapon) return "散弹枪";
+        if (weapon instanceof GrenadeWeapon) return "榴弹";
+        return "未知";
     }
 
     private void renderPauseMenu() {

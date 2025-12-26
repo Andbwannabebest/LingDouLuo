@@ -10,49 +10,55 @@ import java.util.Properties;
 
 public class Config {
     // 窗口设置
-    public static final int WINDOW_WIDTH = 1280;
-    public static final int WINDOW_HEIGHT = 720;
+    public static final int WINDOW_WIDTH = 720;
+    public static final int WINDOW_HEIGHT = 550;
 
-    // 游戏设置 - 调整参数
-    public static final double GRAVITY = 0.3; // 降低重力
-    public static final double PLAYER_JUMP_FORCE = -10.0; // 调整跳跃力度
-    public static final double PLAYER_MOVE_SPEED = 2.5; // 降低移动速度
+    // 游戏设置 - 魂斗罗风格参数
+    public static final double GRAVITY = 0.5; // 标准重力
+    public static final double PLAYER_JUMP_FORCE = -12.0; // 标准跳跃力度
+    public static final double PLAYER_MOVE_SPEED = 2.0; // 进一步降低移动速度
+
+    // 魂斗罗风格参数
     public static final int PLAYER_MAX_HEALTH = 3;
     public static final int PLAYER_MAX_LIVES = 3;
 
     // 物理设置
-    public static final double FRICTION = 0.85;
-    public static final double AIR_RESISTANCE = 0.95;
+    public static final double FRICTION = 0.9; // 提高摩擦力，减少滑动
+    public static final double AIR_RESISTANCE = 0.98;
 
     // 游戏状态
     public static GameState GAME_STATE = GameState.MENU;
 
-    // 玩家1控制设置 (WASD + JKL + 空格)
+    // 玩家1控制设置 (WASD + JKL + 空格) - 魂斗罗风格
     public static int KEY_P1_UP = 87;        // W
     public static int KEY_P1_DOWN = 83;      // S
     public static int KEY_P1_LEFT = 65;      // A
     public static int KEY_P1_RIGHT = 68;     // D
-    public static int KEY_P1_JUMP = 32;      // 空格键
-    public static int KEY_P1_ALT_JUMP = 75;  // K (备用跳跃键)
-    public static int KEY_P1_SHOOT = 74;     // J
-    public static int KEY_P1_WEAPON_SWITCH = 85; // U
-    public static int KEY_P1_PAUSE = 72;     // H
+    public static int KEY_P1_JUMP = 75;      // K (魂斗罗跳跃键)
+    public static int KEY_P1_ALT_JUMP = 32;  // 空格 (备用跳跃键)
+    public static int KEY_P1_SHOOT = 74;     // J (射击)
+    public static int KEY_P1_WEAPON_SWITCH = 85; // U (切换武器)
+    public static int KEY_P1_PAUSE = 72;     // H (暂停)
 
-    // 玩家2控制设置 (方向键 + 数字键 + 小键盘)
+    // 玩家2控制设置 (方向键 + 数字键) - 魂斗罗风格
     public static int KEY_P2_UP = 38;        // ↑
     public static int KEY_P2_DOWN = 40;      // ↓
     public static int KEY_P2_LEFT = 37;      // ←
     public static int KEY_P2_RIGHT = 39;     // →
-    public static int KEY_P2_JUMP = 17;      // Ctrl (玩家2跳跃)
-    public static int KEY_P2_ALT_JUMP = 51;  // 3 (备用跳跃键)
-    public static int KEY_P2_SHOOT = 18;     // Alt (玩家2射击)
-    public static int KEY_P2_ALT_SHOOT = 50; // 2 (备用射击键)
-    public static int KEY_P2_WEAPON_SWITCH = 53; // 5
-    public static int KEY_P2_PAUSE = 57;     // 9
+    public static int KEY_P2_JUMP = 51;      // 3 (跳跃)
+    public static int KEY_P2_ALT_JUMP = 17;  // Ctrl (备用跳跃键)
+    public static int KEY_P2_SHOOT = 50;     // 2 (射击)
+    public static int KEY_P2_ALT_SHOOT = 18; // Alt (备用射击键)
+    public static int KEY_P2_WEAPON_SWITCH = 53; // 5 (切换武器)
+    public static int KEY_P2_PAUSE = 57;     // 9 (暂停)
 
     // 通用控制
     public static int KEY_BACK = 73;         // I
     public static int KEY_ESCAPE = 27;       // ESC
+    public static int KEY_RESTART = 82;      // R (重新开始)
+    public static int KEY_NEXT_LEVEL = 78;   // N (下一关)
+    public static int KEY_SAVE = 83;         // S (保存)
+    public static int KEY_LOAD = 76;         // L (加载)
 
     // 资源路径
     public static final String ASSETS_PATH = "assets/";
@@ -74,8 +80,8 @@ public class Config {
                 KEY_P1_DOWN = Integer.parseInt(props.getProperty("key_p1_down", "83"));
                 KEY_P1_LEFT = Integer.parseInt(props.getProperty("key_p1_left", "65"));
                 KEY_P1_RIGHT = Integer.parseInt(props.getProperty("key_p1_right", "68"));
-                KEY_P1_JUMP = Integer.parseInt(props.getProperty("key_p1_jump", "32")); // 空格键
-                KEY_P1_ALT_JUMP = Integer.parseInt(props.getProperty("key_p1_alt_jump", "75"));
+                KEY_P1_JUMP = Integer.parseInt(props.getProperty("key_p1_jump", "75")); // K键
+                KEY_P1_ALT_JUMP = Integer.parseInt(props.getProperty("key_p1_alt_jump", "32")); // 空格键
                 KEY_P1_SHOOT = Integer.parseInt(props.getProperty("key_p1_shoot", "74"));
                 KEY_P1_WEAPON_SWITCH = Integer.parseInt(props.getProperty("key_p1_weapon_switch", "85"));
                 KEY_P1_PAUSE = Integer.parseInt(props.getProperty("key_p1_pause", "72"));
@@ -85,16 +91,20 @@ public class Config {
                 KEY_P2_DOWN = Integer.parseInt(props.getProperty("key_p2_down", "40"));
                 KEY_P2_LEFT = Integer.parseInt(props.getProperty("key_p2_left", "37"));
                 KEY_P2_RIGHT = Integer.parseInt(props.getProperty("key_p2_right", "39"));
-                KEY_P2_JUMP = Integer.parseInt(props.getProperty("key_p2_jump", "17"));
-                KEY_P2_ALT_JUMP = Integer.parseInt(props.getProperty("key_p2_alt_jump", "51"));
-                KEY_P2_SHOOT = Integer.parseInt(props.getProperty("key_p2_shoot", "18"));
-                KEY_P2_ALT_SHOOT = Integer.parseInt(props.getProperty("key_p2_alt_shoot", "50"));
+                KEY_P2_JUMP = Integer.parseInt(props.getProperty("key_p2_jump", "51")); // 3键
+                KEY_P2_ALT_JUMP = Integer.parseInt(props.getProperty("key_p2_alt_jump", "17")); // Ctrl键
+                KEY_P2_SHOOT = Integer.parseInt(props.getProperty("key_p2_shoot", "50")); // 2键
+                KEY_P2_ALT_SHOOT = Integer.parseInt(props.getProperty("key_p2_alt_shoot", "18")); // Alt键
                 KEY_P2_WEAPON_SWITCH = Integer.parseInt(props.getProperty("key_p2_weapon_switch", "53"));
                 KEY_P2_PAUSE = Integer.parseInt(props.getProperty("key_p2_pause", "57"));
 
                 // 加载通用控制
                 KEY_BACK = Integer.parseInt(props.getProperty("key_back", "73"));
                 KEY_ESCAPE = Integer.parseInt(props.getProperty("key_escape", "27"));
+                KEY_RESTART = Integer.parseInt(props.getProperty("key_restart", "82"));
+                KEY_NEXT_LEVEL = Integer.parseInt(props.getProperty("key_next_level", "78"));
+                KEY_SAVE = Integer.parseInt(props.getProperty("key_save", "83"));
+                KEY_LOAD = Integer.parseInt(props.getProperty("key_load", "76"));
 
             } else {
                 // 创建默认配置文件
@@ -135,6 +145,10 @@ public class Config {
             // 保存通用控制
             props.setProperty("key_back", String.valueOf(KEY_BACK));
             props.setProperty("key_escape", String.valueOf(KEY_ESCAPE));
+            props.setProperty("key_restart", String.valueOf(KEY_RESTART));
+            props.setProperty("key_next_level", String.valueOf(KEY_NEXT_LEVEL));
+            props.setProperty("key_save", String.valueOf(KEY_SAVE));
+            props.setProperty("key_load", String.valueOf(KEY_LOAD));
 
             // 写入文件
             File configFile = new File(CONFIG_FILE);

@@ -24,6 +24,8 @@ public class Player extends Entity {
     private boolean hasDoubleJumped;
     private long lastGroundTime; // 上次在地面的时间
     private long respawnTime; // 复活时间
+    private long invincibleTime; // 无敌时间
+    private boolean isInvincible; // 是否无敌
 
     private Weapon currentWeapon;
     private List<Weapon> weapons;
@@ -35,8 +37,9 @@ public class Player extends Entity {
     private long lastShootTime;
     private long shootStartTime; // 开始射击的时间，用于蓄力
     private boolean isCharging; // 是否正在蓄力
-    private static final long SHOOT_COOLDOWN = 100; // 毫秒（连续射击间隔）
+    private static final long SHOOT_COOLDOWN = 200; // 毫秒（增加射击间隔）
     private static final long CHARGE_TIME = 1000; // 蓄力时间（毫秒）
+    private static final long INVINCIBLE_DURATION = 2000; // 无敌时间2秒
 
     // 武器携带限制
     private static final int MAX_WEAPONS = 3;
@@ -56,6 +59,8 @@ public class Player extends Entity {
         this.isCharging = false;
         this.lastGroundTime = System.currentTimeMillis();
         this.respawnTime = 0;
+        this.invincibleTime = 0;
+        this.isInvincible = false;
 
         // 初始化武器
         this.weapons = new ArrayList<>();
@@ -69,6 +74,9 @@ public class Player extends Entity {
 
     @Override
     public void update(double deltaTime) {
+        // 更新无敌状态
+        updateInvincibleState();
+
         if (!isActive) {
             // 检查复活
             if (respawnTime > 0 && System.currentTimeMillis() - respawnTime > 2000) {
@@ -80,7 +88,6 @@ public class Player extends Entity {
         handleInput();
         applyPhysics(deltaTime);
         updateWeapon(deltaTime);
-        updateAnimation(deltaTime);
 
         // 处理蓄力射击
         if (isCharging) {
@@ -90,6 +97,15 @@ public class Player extends Entity {
                 shoot(true);
                 isCharging = false;
                 shootStartTime = 0;
+            }
+        }
+    }
+
+    private void updateInvincibleState() {
+        if (isInvincible) {
+            if (System.currentTimeMillis() - invincibleTime > INVINCIBLE_DURATION) {
+                isInvincible = false;
+                invincibleTime = 0;
             }
         }
     }
@@ -118,7 +134,7 @@ public class Player extends Entity {
             weaponSwitchPressed = inputManager.isP2WeaponSwitch();
         }
 
-        // 水平移动 - 使用调整后的速度
+        // 水平移动 - 直接控制速度，不使用加速度
         double moveInput = 0;
         if (leftPressed) {
             moveInput -= 1;
@@ -129,24 +145,32 @@ public class Player extends Entity {
             isFacingRight = true;
         }
 
-        velocityX = moveInput * Config.PLAYER_MOVE_SPEED;
+        // 直接设置速度，不使用加速度
+        if (moveInput != 0) {
+            velocityX = moveInput * Config.PLAYER_MOVE_SPEED;
+        } else {
+            // 没有输入时，立即停止水平移动（魂斗罗风格）
+            velocityX = 0;
+        }
 
         // 跳跃（支持二段跳）
-        if (jumpPressed) {
+        if (jumpPressed && !isJumping) {
             if (isOnGround) {
                 velocityY = Config.PLAYER_JUMP_FORCE;
                 isJumping = true;
                 isOnGround = false;
                 hasDoubleJumped = false;
-            } else if (canDoubleJump && !hasDoubleJumped &&
-                    System.currentTimeMillis() - lastGroundTime < 500) {
-                // 二段跳：需要在离开地面后500毫秒内
-                velocityY = Config.PLAYER_JUMP_FORCE * 0.8; // 二段跳力度较小
+            } else if (canDoubleJump && !hasDoubleJumped) {
+                // 二段跳
+                velocityY = Config.PLAYER_JUMP_FORCE * 0.7; // 二段跳力度较小
                 hasDoubleJumped = true;
                 isJumping = true;
             }
-        } else {
-            isJumping = false;
+        }
+
+        // 松开跳跃键时，如果还在上升，减少上升速度（更好的跳跃控制）
+        if (!jumpPressed && velocityY < 0) {
+            velocityY *= 0.8;
         }
 
         // 射击（支持长按连续射击和蓄力）
@@ -177,8 +201,8 @@ public class Player extends Entity {
             }
         }
 
-        // 切换武器
-        if (weaponSwitchPressed && inputManager.isKeyJustPressed(playerId == 1 ? Config.KEY_P1_WEAPON_SWITCH : Config.KEY_P2_WEAPON_SWITCH)) {
+        // 切换武器 - 使用isKeyJustPressed防止连续切换
+        if (weaponSwitchPressed) {
             switchWeapon();
         }
     }
@@ -193,13 +217,13 @@ public class Player extends Entity {
 
         // 限制垂直速度
         if (velocityY > 15) velocityY = 15;
+        if (velocityY < -15) velocityY = -15;
 
-        // 应用速度
-        double frameAdjust = 60.0 * deltaTime;
-        x += velocityX * frameAdjust;
-        y += velocityY * frameAdjust;
+        // 应用速度 - 简化计算，避免乱飘
+        x += velocityX * deltaTime * 60;
+        y += velocityY * deltaTime * 60;
 
-        // 边界检查 - 掉出底部不会死亡，而是传送到顶部
+        // 边界检查 - 魂斗罗风格：不掉落死亡，只在屏幕内移动
         if (x < 0) {
             x = 0;
             velocityX = 0;
@@ -209,23 +233,25 @@ public class Player extends Entity {
             velocityX = 0;
         }
 
-        // 魂斗罗风格：掉出底部传送到顶部
-        if (y > Config.WINDOW_HEIGHT) {
-            y = 0;
-            velocityY = 0;
-            isOnGround = false;
-        }
-
-        // 顶部边界
+        // 垂直边界 - 完全取消掉落死亡，只在屏幕内
         if (y < 0) {
             y = 0;
             velocityY = 0;
         }
+        if (y > Config.WINDOW_HEIGHT - height) {
+            y = Config.WINDOW_HEIGHT - height;
+            velocityY = 0;
+            isOnGround = true;
+            isJumping = false;
+            hasDoubleJumped = false;
+        }
 
-        // 应用摩擦力
-        if (isOnGround) {
+        // 简单的摩擦力 - 只在落地时应用
+        if (isOnGround && Math.abs(velocityX) > 0) {
             velocityX *= Config.FRICTION;
-            if (Math.abs(velocityX) < 0.1) velocityX = 0;
+            if (Math.abs(velocityX) < 0.1) {
+                velocityX = 0;
+            }
         }
     }
 
@@ -261,10 +287,6 @@ public class Player extends Entity {
         }
     }
 
-    private void updateAnimation(double deltaTime) {
-        // TODO: 实现动画更新逻辑
-    }
-
     @Override
     public void render(GraphicsContext gc) {
         if (!isActive) {
@@ -281,7 +303,14 @@ public class Player extends Entity {
             return;
         }
 
-        renderPlayerBody(gc);
+        // 无敌状态闪烁
+        if (isInvincible) {
+            if ((System.currentTimeMillis() / 100) % 2 == 0) {
+                renderPlayerBody(gc);
+            }
+        } else {
+            renderPlayerBody(gc);
+        }
     }
 
     private void renderPlayerBody(GraphicsContext gc) {
@@ -340,6 +369,8 @@ public class Player extends Entity {
 
     @Override
     public void handleCollision(CollisionResult collision) {
+        if (isInvincible) return;
+
         // 处理与其他实体的碰撞
         switch (collision.getType()) {
             case PLATFORM:
@@ -366,6 +397,7 @@ public class Player extends Entity {
             y = collision.getEntityY() - height;
             velocityY = 0;
             isOnGround = true;
+            isJumping = false;
             hasDoubleJumped = false;
         } else if (collision.getNormalY() > 0) { // 从下方碰撞
             y = collision.getEntityY() + collision.getEntityHeight();
@@ -378,13 +410,18 @@ public class Player extends Entity {
     }
 
     public void takeDamage(int damage) {
+        if (isInvincible) return;
+
         health -= damage;
         if (health <= 0) {
             health = 0;
             die();
+        } else {
+            // 受伤后进入无敌状态
+            isInvincible = true;
+            invincibleTime = System.currentTimeMillis();
         }
 
-        // TODO: 添加受伤无敌时间
         // TODO: 播放受伤音效
     }
 
@@ -409,6 +446,9 @@ public class Player extends Entity {
             velocityX = 0;
             velocityY = 0;
             respawnTime = 0;
+            // 复活后无敌2秒
+            isInvincible = true;
+            invincibleTime = System.currentTimeMillis();
         }
     }
 
@@ -433,6 +473,7 @@ public class Player extends Entity {
     public Weapon getCurrentWeapon() { return currentWeapon; }
     public List<Weapon> getWeapons() { return weapons; }
     public boolean isCharging() { return isCharging; }
+    public boolean isInvincible() { return isInvincible; }
 
     public void setInputManager(InputManager inputManager) {
         this.inputManager = inputManager;
