@@ -4,7 +4,6 @@ package com.lingdouluo.entity;
 import com.lingdouluo.config.Config;
 import com.lingdouluo.input.InputManager;
 import com.lingdouluo.physics.CollisionResult;
-import com.lingdouluo.GameState;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
@@ -23,6 +22,8 @@ public class Player extends Entity {
     private boolean isShooting;
     private boolean canDoubleJump;
     private boolean hasDoubleJumped;
+    private long lastGroundTime; // 上次在地面的时间
+    private long respawnTime; // 复活时间
 
     private Weapon currentWeapon;
     private List<Weapon> weapons;
@@ -53,6 +54,8 @@ public class Player extends Entity {
         this.canDoubleJump = true;
         this.hasDoubleJumped = false;
         this.isCharging = false;
+        this.lastGroundTime = System.currentTimeMillis();
+        this.respawnTime = 0;
 
         // 初始化武器
         this.weapons = new ArrayList<>();
@@ -66,7 +69,13 @@ public class Player extends Entity {
 
     @Override
     public void update(double deltaTime) {
-        if (!isActive) return;
+        if (!isActive) {
+            // 检查复活
+            if (respawnTime > 0 && System.currentTimeMillis() - respawnTime > 2000) {
+                respawn();
+            }
+            return;
+        }
 
         handleInput();
         applyPhysics(deltaTime);
@@ -109,7 +118,7 @@ public class Player extends Entity {
             weaponSwitchPressed = inputManager.isP2WeaponSwitch();
         }
 
-        // 水平移动
+        // 水平移动 - 使用调整后的速度
         double moveInput = 0;
         if (leftPressed) {
             moveInput -= 1;
@@ -129,7 +138,9 @@ public class Player extends Entity {
                 isJumping = true;
                 isOnGround = false;
                 hasDoubleJumped = false;
-            } else if (canDoubleJump && !hasDoubleJumped) {
+            } else if (canDoubleJump && !hasDoubleJumped &&
+                    System.currentTimeMillis() - lastGroundTime < 500) {
+                // 二段跳：需要在离开地面后500毫秒内
                 velocityY = Config.PLAYER_JUMP_FORCE * 0.8; // 二段跳力度较小
                 hasDoubleJumped = true;
                 isJumping = true;
@@ -176,16 +187,19 @@ public class Player extends Entity {
         // 应用重力
         if (!isOnGround) {
             velocityY += Config.GRAVITY;
+        } else {
+            lastGroundTime = System.currentTimeMillis();
         }
 
         // 限制垂直速度
-        if (velocityY > 20) velocityY = 20;
+        if (velocityY > 15) velocityY = 15;
 
         // 应用速度
-        x += velocityX * deltaTime * 60; // 乘以60来补偿deltaTime
-        y += velocityY * deltaTime * 60;
+        double frameAdjust = 60.0 * deltaTime;
+        x += velocityX * frameAdjust;
+        y += velocityY * frameAdjust;
 
-        // 边界检查
+        // 边界检查 - 掉出底部不会死亡，而是传送到顶部
         if (x < 0) {
             x = 0;
             velocityX = 0;
@@ -194,10 +208,18 @@ public class Player extends Entity {
             x = Config.WINDOW_WIDTH - width;
             velocityX = 0;
         }
-        if (y > Config.WINDOW_HEIGHT - height) {
-            y = Config.WINDOW_HEIGHT - height;
+
+        // 魂斗罗风格：掉出底部传送到顶部
+        if (y > Config.WINDOW_HEIGHT) {
+            y = 0;
             velocityY = 0;
-            isOnGround = true;
+            isOnGround = false;
+        }
+
+        // 顶部边界
+        if (y < 0) {
+            y = 0;
+            velocityY = 0;
         }
 
         // 应用摩擦力
@@ -245,8 +267,24 @@ public class Player extends Entity {
 
     @Override
     public void render(GraphicsContext gc) {
-        if (!isActive) return;
+        if (!isActive) {
+            // 显示死亡/复活效果
+            if (respawnTime > 0) {
+                long timeSinceDeath = System.currentTimeMillis() - respawnTime;
+                if (timeSinceDeath < 2000) {
+                    // 闪烁效果
+                    if ((timeSinceDeath / 200) % 2 == 0) {
+                        renderPlayerBody(gc);
+                    }
+                }
+            }
+            return;
+        }
 
+        renderPlayerBody(gc);
+    }
+
+    private void renderPlayerBody(GraphicsContext gc) {
         // 根据玩家ID选择颜色
         Color playerColor;
         if (playerId == 1) {
@@ -343,16 +381,35 @@ public class Player extends Entity {
         health -= damage;
         if (health <= 0) {
             health = 0;
-            isActive = false;
-            lives--;
-            if (lives <= 0) {
-                // 游戏结束
-                Config.GAME_STATE = GameState.GAME_OVER;
-            }
+            die();
         }
 
         // TODO: 添加受伤无敌时间
         // TODO: 播放受伤音效
+    }
+
+    private void die() {
+        isActive = false;
+        lives--;
+        respawnTime = System.currentTimeMillis();
+
+        if (lives <= 0) {
+            // 游戏结束
+            respawnTime = 0;
+        }
+    }
+
+    private void respawn() {
+        if (lives > 0) {
+            isActive = true;
+            health = maxHealth;
+            // 重置到安全位置
+            x = 100;
+            y = 500;
+            velocityX = 0;
+            velocityY = 0;
+            respawnTime = 0;
+        }
     }
 
     public void heal(int amount) {

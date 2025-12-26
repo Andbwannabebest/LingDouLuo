@@ -27,7 +27,7 @@ public class LingDouLuoGame {
     private boolean isPaused;
     private boolean showPauseMenu;
 
-    // 敌人列表 - 修改为Enemy类型
+    // 敌人列表
     private List<Enemy> enemies;
 
     // 菜单状态
@@ -44,7 +44,7 @@ public class LingDouLuoGame {
         this.gc = gc;
         this.inputManager = new InputManager();
         this.levels = new ArrayList<>();
-        this.enemies = new ArrayList<>(); // 改为List<Enemy>
+        this.enemies = new ArrayList<>();
         this.gameTime = 0;
         this.isPaused = false;
         this.showPauseMenu = false;
@@ -86,7 +86,7 @@ public class LingDouLuoGame {
         factoryLevel.setBackgroundColor(Color.rgb(60, 60, 70));
         factoryLevel.setPlayerSpawn(100, 500);
 
-        // 添加平台
+        // 添加平台 - 确保玩家出生在平台上
         factoryLevel.addPlatform(0, 600, 1280, 120);  // 地面
         factoryLevel.addPlatform(200, 500, 100, 20);  // 平台1
         factoryLevel.addPlatform(400, 450, 100, 20);  // 平台2
@@ -119,7 +119,7 @@ public class LingDouLuoGame {
     private void createEnemies() {
         enemies.clear();
 
-        // 创建巡逻敌人
+        // 创建巡逻敌人 - 确保敌人在平台上
         PatrolEnemy enemy1 = new PatrolEnemy(400, 550, 64, 64);
         enemy1.setPatrolRange(100);
         enemy1.setPatrolSpeed(1.5);
@@ -283,8 +283,8 @@ public class LingDouLuoGame {
             // 简单推开逻辑
             double dx = player1.getX() - player2.getX();
             if (dx != 0) {
-                player1.setX(player1.getX() + dx * 0.1);
-                player2.setX(player2.getX() - dx * 0.1);
+                player1.setX(player1.getX() + dx * 0.05);
+                player2.setX(player2.getX() - dx * 0.05);
             }
         }
     }
@@ -333,8 +333,8 @@ public class LingDouLuoGame {
     }
 
     private void checkGameState() {
-        // 检查玩家生命值
-        if (player1.getHealth() <= 0 && player2.getHealth() <= 0) {
+        // 检查玩家生命值 - 只有当两个玩家都彻底死亡才游戏结束
+        if (player1.getLives() <= 0 && player2.getLives() <= 0) {
             menuState = MenuState.GAME_OVER;
             Config.GAME_STATE = GameState.GAME_OVER;
         }
@@ -411,11 +411,11 @@ public class LingDouLuoGame {
         gc.setFont(Font.font("Arial", 36));
         gc.fillText("双人合作射击游戏", Config.WINDOW_WIDTH / 2 - 180, 220);
 
-        // 操作说明
+        // 操作说明 - 更新按键说明
         gc.setFill(Color.WHITE);
         gc.setFont(Font.font("Arial", 24));
-        gc.fillText("玩家1: WASD移动, K跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 250, 300);
-        gc.fillText("玩家2: 方向键移动, 3跳跃, 2射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 250, 340);
+        gc.fillText("玩家1: WASD移动, 空格/K跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 250, 300);
+        gc.fillText("玩家2: 方向键移动, Ctrl/3跳跃, Alt/2射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 250, 340);
         gc.fillText("暂停: H(玩家1) 或 9(玩家2) 或 ESC", Config.WINDOW_WIDTH / 2 - 200, 380);
         gc.fillText("返回主菜单: I", Config.WINDOW_WIDTH / 2 - 100, 420);
 
@@ -436,8 +436,10 @@ public class LingDouLuoGame {
         gc.fillText("时间: " + (int)gameTime + "秒", 10, 20);
         gc.fillText("关卡: " + (currentLevelIndex + 1), 10, 40);
         gc.fillText("剩余敌人: " + enemies.size(), 10, 60);
-        gc.fillText("玩家1生命: " + player1.getHealth() + "/" + player1.getMaxHealth(), 10, 80);
-        gc.fillText("玩家2生命: " + player2.getHealth() + "/" + player2.getMaxHealth(), 10, 100);
+        gc.fillText("玩家1生命: " + player1.getHealth() + "/" + player1.getMaxHealth() +
+                " 生命数: " + player1.getLives(), 10, 80);
+        gc.fillText("玩家2生命: " + player2.getHealth() + "/" + player2.getMaxHealth() +
+                " 生命数: " + player2.getLives(), 10, 100);
     }
 
     private void renderPauseMenu() {
@@ -497,12 +499,12 @@ public class LingDouLuoGame {
         gc.setFont(Font.font("Arial", 24));
         gc.fillText("用时: " + (int)gameTime + "秒", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2);
         gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 40);
-        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_HEIGHT / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
+        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
 
         // 选项
         gc.setFill(Color.CYAN);
-        gc.fillText("下一关: 按 N", Config.WINDOW_HEIGHT / 2 - 60, Config.WINDOW_HEIGHT / 2 + 140);
-        gc.fillText("返回主菜单: 按 I", Config.WINDOW_HEIGHT / 2 - 100, Config.WINDOW_HEIGHT / 2 + 180);
+        gc.fillText("下一关: 按 N", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 140);
+        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 + 180);
     }
 
     public void togglePause() {

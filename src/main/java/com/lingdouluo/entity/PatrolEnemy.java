@@ -32,33 +32,38 @@ public class PatrolEnemy extends Enemy {
         applyPhysics(deltaTime);
     }
 
-     protected void patrol(double deltaTime) {
-
-         if (patrolRange > 0) {
+    protected void patrol(double deltaTime) {
+        if (patrolRange > 0) {
             velocityX = patrolDirection * patrolSpeed;
 
             // 检查是否到达巡逻边界
             if (x > patrolStartX + patrolRange) {
                 patrolDirection = -1;
-                x = patrolStartX + patrolRange;
                 velocityX = 0;
             } else if (x < patrolStartX - patrolRange) {
                 patrolDirection = 1;
-                x = patrolStartX - patrolRange;
                 velocityX = 0;
             }
         }
     }
 
-   protected void applyPhysics(double deltaTime) {
+    protected void applyPhysics(double deltaTime) {
         // 应用重力
         if (!isOnGround) {
             velocityY += 0.5;
         }
 
-        // 更新位置
-        x += velocityX * deltaTime * 60;
-        y += velocityY * deltaTime * 60;
+        // 更新位置 - 使用deltaTime确保不同帧率下移动一致
+        double frameAdjust = 60.0 * deltaTime;
+        x += velocityX * frameAdjust;
+        y += velocityY * frameAdjust;
+
+        // 边界检查 - 敌人不会掉出地图
+        if (y > 600 - height) {
+            y = 600 - height;
+            velocityY = 0;
+            isOnGround = true;
+        }
     }
 
     @Override

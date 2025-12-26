@@ -40,23 +40,23 @@ public class InputManager {
     }
 
     private void updateInputStates() {
-        // 玩家1输入
+        // 玩家1输入 - 支持空格键和K键跳跃
         p1Up = isKeyPressed(Config.KEY_P1_UP);
         p1Down = isKeyPressed(Config.KEY_P1_DOWN);
         p1Left = isKeyPressed(Config.KEY_P1_LEFT);
         p1Right = isKeyPressed(Config.KEY_P1_RIGHT);
-        p1Jump = isKeyPressed(Config.KEY_P1_JUMP);
+        p1Jump = isKeyPressed(Config.KEY_P1_JUMP) || isKeyPressed(Config.KEY_P1_ALT_JUMP); // 空格或K
         p1Shoot = isKeyPressed(Config.KEY_P1_SHOOT);
         p1WeaponSwitch = isKeyPressed(Config.KEY_P1_WEAPON_SWITCH);
         p1Pause = isKeyPressed(Config.KEY_P1_PAUSE);
 
-        // 玩家2输入
+        // 玩家2输入 - 支持Ctrl和3跳跃，Alt和2射击
         p2Up = isKeyPressed(Config.KEY_P2_UP);
         p2Down = isKeyPressed(Config.KEY_P2_DOWN);
         p2Left = isKeyPressed(Config.KEY_P2_LEFT);
         p2Right = isKeyPressed(Config.KEY_P2_RIGHT);
-        p2Jump = isKeyPressed(Config.KEY_P2_JUMP);
-        p2Shoot = isKeyPressed(Config.KEY_P2_SHOOT);
+        p2Jump = isKeyPressed(Config.KEY_P2_JUMP) || isKeyPressed(Config.KEY_P2_ALT_JUMP); // Ctrl或3
+        p2Shoot = isKeyPressed(Config.KEY_P2_SHOOT) || isKeyPressed(Config.KEY_P2_ALT_SHOOT); // Alt或2
         p2WeaponSwitch = isKeyPressed(Config.KEY_P2_WEAPON_SWITCH);
         p2Pause = isKeyPressed(Config.KEY_P2_PAUSE);
 

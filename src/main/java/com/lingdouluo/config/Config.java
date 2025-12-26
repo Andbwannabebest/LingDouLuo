@@ -10,40 +10,43 @@ import java.util.Properties;
 
 public class Config {
     // 窗口设置
-    public static final int WINDOW_WIDTH = 900;
-    public static final int WINDOW_HEIGHT = 550;
+    public static final int WINDOW_WIDTH = 1280;
+    public static final int WINDOW_HEIGHT = 720;
 
-    // 游戏设置
-    public static final double GRAVITY = 0.5;
-    public static final double PLAYER_JUMP_FORCE = -12.0;
-    public static final double PLAYER_MOVE_SPEED = 5.0;
+    // 游戏设置 - 调整参数
+    public static final double GRAVITY = 0.3; // 降低重力
+    public static final double PLAYER_JUMP_FORCE = -10.0; // 调整跳跃力度
+    public static final double PLAYER_MOVE_SPEED = 2.5; // 降低移动速度
     public static final int PLAYER_MAX_HEALTH = 3;
     public static final int PLAYER_MAX_LIVES = 3;
 
     // 物理设置
-    public static final double FRICTION = 0.8;
+    public static final double FRICTION = 0.85;
     public static final double AIR_RESISTANCE = 0.95;
 
     // 游戏状态
     public static GameState GAME_STATE = GameState.MENU;
 
-    // 玩家1控制设置 (WASD + JKUH)
+    // 玩家1控制设置 (WASD + JKL + 空格)
     public static int KEY_P1_UP = 87;        // W
     public static int KEY_P1_DOWN = 83;      // S
     public static int KEY_P1_LEFT = 65;      // A
     public static int KEY_P1_RIGHT = 68;     // D
-    public static int KEY_P1_JUMP = 75;      // K
+    public static int KEY_P1_JUMP = 32;      // 空格键
+    public static int KEY_P1_ALT_JUMP = 75;  // K (备用跳跃键)
     public static int KEY_P1_SHOOT = 74;     // J
     public static int KEY_P1_WEAPON_SWITCH = 85; // U
     public static int KEY_P1_PAUSE = 72;     // H
 
-    // 玩家2控制设置 (方向键 + 数字键)
+    // 玩家2控制设置 (方向键 + 数字键 + 小键盘)
     public static int KEY_P2_UP = 38;        // ↑
     public static int KEY_P2_DOWN = 40;      // ↓
     public static int KEY_P2_LEFT = 37;      // ←
     public static int KEY_P2_RIGHT = 39;     // →
-    public static int KEY_P2_JUMP = 51;      // 3
-    public static int KEY_P2_SHOOT = 50;     // 2
+    public static int KEY_P2_JUMP = 17;      // Ctrl (玩家2跳跃)
+    public static int KEY_P2_ALT_JUMP = 51;  // 3 (备用跳跃键)
+    public static int KEY_P2_SHOOT = 18;     // Alt (玩家2射击)
+    public static int KEY_P2_ALT_SHOOT = 50; // 2 (备用射击键)
     public static int KEY_P2_WEAPON_SWITCH = 53; // 5
     public static int KEY_P2_PAUSE = 57;     // 9
 
@@ -71,7 +74,8 @@ public class Config {
                 KEY_P1_DOWN = Integer.parseInt(props.getProperty("key_p1_down", "83"));
                 KEY_P1_LEFT = Integer.parseInt(props.getProperty("key_p1_left", "65"));
                 KEY_P1_RIGHT = Integer.parseInt(props.getProperty("key_p1_right", "68"));
-                KEY_P1_JUMP = Integer.parseInt(props.getProperty("key_p1_jump", "75"));
+                KEY_P1_JUMP = Integer.parseInt(props.getProperty("key_p1_jump", "32")); // 空格键
+                KEY_P1_ALT_JUMP = Integer.parseInt(props.getProperty("key_p1_alt_jump", "75"));
                 KEY_P1_SHOOT = Integer.parseInt(props.getProperty("key_p1_shoot", "74"));
                 KEY_P1_WEAPON_SWITCH = Integer.parseInt(props.getProperty("key_p1_weapon_switch", "85"));
                 KEY_P1_PAUSE = Integer.parseInt(props.getProperty("key_p1_pause", "72"));
@@ -81,8 +85,10 @@ public class Config {
                 KEY_P2_DOWN = Integer.parseInt(props.getProperty("key_p2_down", "40"));
                 KEY_P2_LEFT = Integer.parseInt(props.getProperty("key_p2_left", "37"));
                 KEY_P2_RIGHT = Integer.parseInt(props.getProperty("key_p2_right", "39"));
-                KEY_P2_JUMP = Integer.parseInt(props.getProperty("key_p2_jump", "51"));
-                KEY_P2_SHOOT = Integer.parseInt(props.getProperty("key_p2_shoot", "50"));
+                KEY_P2_JUMP = Integer.parseInt(props.getProperty("key_p2_jump", "17"));
+                KEY_P2_ALT_JUMP = Integer.parseInt(props.getProperty("key_p2_alt_jump", "51"));
+                KEY_P2_SHOOT = Integer.parseInt(props.getProperty("key_p2_shoot", "18"));
+                KEY_P2_ALT_SHOOT = Integer.parseInt(props.getProperty("key_p2_alt_shoot", "50"));
                 KEY_P2_WEAPON_SWITCH = Integer.parseInt(props.getProperty("key_p2_weapon_switch", "53"));
                 KEY_P2_PAUSE = Integer.parseInt(props.getProperty("key_p2_pause", "57"));
 
@@ -109,6 +115,7 @@ public class Config {
             props.setProperty("key_p1_left", String.valueOf(KEY_P1_LEFT));
             props.setProperty("key_p1_right", String.valueOf(KEY_P1_RIGHT));
             props.setProperty("key_p1_jump", String.valueOf(KEY_P1_JUMP));
+            props.setProperty("key_p1_alt_jump", String.valueOf(KEY_P1_ALT_JUMP));
             props.setProperty("key_p1_shoot", String.valueOf(KEY_P1_SHOOT));
             props.setProperty("key_p1_weapon_switch", String.valueOf(KEY_P1_WEAPON_SWITCH));
             props.setProperty("key_p1_pause", String.valueOf(KEY_P1_PAUSE));
@@ -119,7 +126,9 @@ public class Config {
             props.setProperty("key_p2_left", String.valueOf(KEY_P2_LEFT));
             props.setProperty("key_p2_right", String.valueOf(KEY_P2_RIGHT));
             props.setProperty("key_p2_jump", String.valueOf(KEY_P2_JUMP));
+            props.setProperty("key_p2_alt_jump", String.valueOf(KEY_P2_ALT_JUMP));
             props.setProperty("key_p2_shoot", String.valueOf(KEY_P2_SHOOT));
+            props.setProperty("key_p2_alt_shoot", String.valueOf(KEY_P2_ALT_SHOOT));
             props.setProperty("key_p2_weapon_switch", String.valueOf(KEY_P2_WEAPON_SWITCH));
             props.setProperty("key_p2_pause", String.valueOf(KEY_P2_PAUSE));
 

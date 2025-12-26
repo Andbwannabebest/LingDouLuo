@@ -1,15 +1,15 @@
 {
   "player1Health": 3,
   "player1MaxHealth": 3,
-  "player1Lives": 3,
-  "player1Score": 0,
-  "player2Health": 0,
+  "player1Lives": 1,
+  "player1Score": 200,
+  "player2Health": 3,
   "player2MaxHealth": 3,
-  "player2Lives": 2,
-  "player2Score": 0,
+  "player2Lives": 3,
+  "player2Score": 200,
   "currentLevel": 0,
-  "gameTime": 1423.4009039999983,
-  "saveTimestamp": 1766719035321,
+  "gameTime": 1680.7286860000008,
+  "saveTimestamp": 1766720080906,
   "player1Weapon": "rifle",
   "player2Weapon": "rifle"
 }

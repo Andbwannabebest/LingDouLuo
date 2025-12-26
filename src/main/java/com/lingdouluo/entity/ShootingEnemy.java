@@ -31,7 +31,7 @@ public class ShootingEnemy extends Enemy {
         applyPhysics(deltaTime);
 
         // 如果有目标，尝试射击
-        if (target != null) {
+        if (target != null && target.isActive()) {
             tryShoot();
         }
 
@@ -48,7 +48,7 @@ public class ShootingEnemy extends Enemy {
     }
 
     private void shoot() {
-        if (target == null) return;
+        if (target == null || !target.isActive()) return;
 
         // 计算射击方向
         double targetX = target.getX() + target.getWidth() / 2;
@@ -60,7 +60,7 @@ public class ShootingEnemy extends Enemy {
         double dy = targetY - enemyY;
         double distance = Math.sqrt(dx * dx + dy * dy);
 
-        if (distance > 0) {
+        if (distance > 0 && distance < 400) { // 只在400像素内射击
             double speed = 3.0;
             double speedX = (dx / distance) * speed;
             double speedY = (dy / distance) * speed;
@@ -102,8 +102,8 @@ public class ShootingEnemy extends Enemy {
         gc.fillRect(x + width/2 - 5, y - 10, 10, 15);
 
         // 绘制瞄准镜
-        if (target != null) {
-            gc.setFill(Color.rgb(255, 255, 0, 0.3));
+        if (target != null && target.isActive()) {
+            gc.setFill(Color.rgb(255, 255, 0, 0.2));
             gc.fillOval(x - 50, y - 50, width + 100, height + 100);
         }
 
