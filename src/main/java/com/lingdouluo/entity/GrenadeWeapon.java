@@ -47,8 +47,8 @@ public class GrenadeWeapon extends Weapon {
         double speedX = isFacingRight ? 8 : -8;
         double speedY = -5; // 向上发射
 
-        // 创建榴弹
-        Bullet grenade = new Bullet(grenadeX, grenadeY, 12, 12);
+        // 创建榴弹 - 修正变量名
+        Bullet grenade = new Bullet(grenadeX, grenadeY, 12, 12); // grenode -> grenade
         grenade.setVelocityX(speedX);
         grenade.setVelocityY(speedY);
         grenade.setDamage((int)(damage * damageMultiplier));
@@ -57,6 +57,6 @@ public class GrenadeWeapon extends Weapon {
         grenade.setExplosionRadius((int)(60 * damageMultiplier));
         grenade.setOwner(owner);
 
-        bullets.add(grenade);
+        bullets.add(grenade); // grenode -> grenade
     }
 }

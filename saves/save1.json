@@ -1,18 +1,15 @@
 {
-  "playerHealth": 3,
-  "playerMaxHealth": 3,
-  "playerLives": 3,
-  "playerScore": 0,
+  "player1Health": 3,
+  "player1MaxHealth": 3,
+  "player1Lives": 3,
+  "player1Score": 0,
+  "player2Health": 0,
+  "player2MaxHealth": 3,
+  "player2Lives": 2,
+  "player2Score": 0,
   "currentLevel": 0,
-  "gameTime": 0.591018,
-  "saveTimestamp": 1766687068116,
-  "currentWeapon": "rifle",
-  "rifleAmmo": -1,
-  "grenadeAmmo": 20,
-  "levelCompleted": [
-    false,
-    false,
-    false,
-    false
-  ]
+  "gameTime": 1423.4009039999983,
+  "saveTimestamp": 1766719035321,
+  "player1Weapon": "rifle",
+  "player2Weapon": "rifle"
 }

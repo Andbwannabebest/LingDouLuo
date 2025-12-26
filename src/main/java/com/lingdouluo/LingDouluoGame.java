@@ -27,8 +27,8 @@ public class LingDouLuoGame {
     private boolean isPaused;
     private boolean showPauseMenu;
 
-    // 敌人列表
-    private List<PatrolEnemy> enemies;
+    // 敌人列表 - 修改为Enemy类型
+    private List<Enemy> enemies;
 
     // 菜单状态
     private MenuState menuState;
@@ -44,7 +44,7 @@ public class LingDouLuoGame {
         this.gc = gc;
         this.inputManager = new InputManager();
         this.levels = new ArrayList<>();
-        this.enemies = new ArrayList<>();
+        this.enemies = new ArrayList<>(); // 改为List<Enemy>
         this.gameTime = 0;
         this.isPaused = false;
         this.showPauseMenu = false;
@@ -209,9 +209,9 @@ public class LingDouLuoGame {
     }
 
     private void updateEnemies(double deltaTime) {
-        List<PatrolEnemy> enemiesToRemove = new ArrayList<>();
+        List<Enemy> enemiesToRemove = new ArrayList<>();
 
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             enemy.update(deltaTime);
 
             // 更新敌人AI（朝向最近的玩家）
@@ -232,7 +232,7 @@ public class LingDouLuoGame {
         enemies.removeAll(enemiesToRemove);
     }
 
-    private Player findNearestPlayer(PatrolEnemy enemy) {
+    private Player findNearestPlayer(Enemy enemy) {
         double distToP1 = Math.sqrt(
                 Math.pow(enemy.getX() - player1.getX(), 2) +
                         Math.pow(enemy.getY() - player1.getY(), 2)
@@ -248,7 +248,7 @@ public class LingDouLuoGame {
 
     private void checkCollisions() {
         // 检查玩家与敌人的碰撞
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             if (player1.intersects(enemy) && player1.isActive()) {
                 player1.takeDamage(enemy.getDamage());
             }
@@ -258,7 +258,7 @@ public class LingDouLuoGame {
         }
 
         // 检查敌人子弹与玩家的碰撞
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             if (enemy instanceof ShootingEnemy) {
                 ShootingEnemy shootingEnemy = (ShootingEnemy) enemy;
                 for (Bullet bullet : shootingEnemy.getBullets()) {
@@ -295,7 +295,7 @@ public class LingDouLuoGame {
         List<Bullet> bulletsToRemove = new ArrayList<>();
 
         for (Bullet bullet : player.getCurrentWeapon().getBullets()) {
-            for (PatrolEnemy enemy : enemies) {
+            for (Enemy enemy : enemies) {
                 if (bullet.intersects(enemy) && bullet.isActive()) {
                     enemy.takeDamage(bullet.getDamage());
 
@@ -316,7 +316,7 @@ public class LingDouLuoGame {
 
     private void createExplosion(double x, double y, double radius, int damage) {
         // 对范围内的敌人造成伤害
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             double distance = Math.sqrt(
                     Math.pow(x - enemy.getX(), 2) +
                             Math.pow(y - enemy.getY(), 2)
@@ -361,7 +361,7 @@ public class LingDouLuoGame {
         }
 
         // 渲染敌人
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             enemy.render(gc);
         }
 
@@ -370,7 +370,7 @@ public class LingDouLuoGame {
         player2.render(gc);
 
         // 渲染敌人子弹
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) {
             if (enemy instanceof ShootingEnemy) {
                 ShootingEnemy shootingEnemy = (ShootingEnemy) enemy;
                 for (Bullet bullet : shootingEnemy.getBullets()) {
@@ -497,12 +497,12 @@ public class LingDouLuoGame {
         gc.setFont(Font.font("Arial", 24));
         gc.fillText("用时: " + (int)gameTime + "秒", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2);
         gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 40);
-        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
+        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_HEIGHT / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
 
         // 选项
         gc.setFill(Color.CYAN);
-        gc.fillText("下一关: 按 N", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 140);
-        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 + 180);
+        gc.fillText("下一关: 按 N", Config.WINDOW_HEIGHT / 2 - 60, Config.WINDOW_HEIGHT / 2 + 140);
+        gc.fillText("返回主菜单: 按 I", Config.WINDOW_HEIGHT / 2 - 100, Config.WINDOW_HEIGHT / 2 + 180);
     }
 
     public void togglePause() {
@@ -578,7 +578,7 @@ public class LingDouLuoGame {
         return currentLevel;
     }
 
-    public List<PatrolEnemy> getEnemies() {
+    public List<Enemy> getEnemies() {
         return enemies;
     }
 

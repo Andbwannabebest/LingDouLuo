@@ -10,8 +10,8 @@ import java.util.Properties;
 
 public class Config {
     // 窗口设置
-    public static final int WINDOW_WIDTH = 1280;
-    public static final int WINDOW_HEIGHT = 720;
+    public static final int WINDOW_WIDTH = 900;
+    public static final int WINDOW_HEIGHT = 550;
 
     // 游戏设置
     public static final double GRAVITY = 0.5;

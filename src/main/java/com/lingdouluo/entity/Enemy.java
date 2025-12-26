@@ -24,7 +24,7 @@ public class Enemy extends Entity {
         this.maxHealth = 20;
         this.health = maxHealth;
         this.damage = 10;
-        this.scoreValue = 100;
+        this.scoreValue = 100; // 确保有默认值
         this.isAggressive = true;
         this.patrolRange = 100;
         this.patrolSpeed = 1.0;

@@ -4,6 +4,7 @@ package com.lingdouluo.entity;
 import com.lingdouluo.config.Config;
 import com.lingdouluo.input.InputManager;
 import com.lingdouluo.physics.CollisionResult;
+import com.lingdouluo.GameState;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 

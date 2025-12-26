@@ -13,7 +13,7 @@ public class Level {
     private String name;
     private Color backgroundColor;
     private List<Platform> platforms;
-    private List<PatrolEnemy> enemies;
+    private List<Enemy> enemies; // 修改为List<Enemy>
     private List<Entity> entities;
     private Player player;
 
@@ -29,7 +29,7 @@ public class Level {
         this.name = name;
         this.backgroundColor = Color.rgb(30, 30, 40);
         this.platforms = new ArrayList<>();
-        this.enemies = new ArrayList<>();
+        this.enemies = new ArrayList<>(); // 修改为List<Enemy>
         this.entities = new ArrayList<>();
         this.collisionSystem = new CollisionSystem();
 
@@ -46,8 +46,8 @@ public class Level {
         player.update(deltaTime);
 
         // 更新敌人
-        List<PatrolEnemy> enemiesToRemove = new ArrayList<>();
-        for (PatrolEnemy enemy : enemies) {
+        List<Enemy> enemiesToRemove = new ArrayList<>(); // 修改为List<Enemy>
+        for (Enemy enemy : enemies) { // 修改为Enemy类型
             enemy.update(deltaTime);
 
             // 检查敌人是否死亡
@@ -79,7 +79,7 @@ public class Level {
         }
 
         // 绘制敌人
-        for (PatrolEnemy enemy : enemies) {
+        for (Enemy enemy : enemies) { // 修改为Enemy类型
             enemy.render(gc);
         }
 
@@ -111,7 +111,7 @@ public class Level {
 
             for (Bullet bullet : player.getCurrentWeapon().getBullets()) {
                 // 检查子弹与每个敌人的碰撞
-                for (PatrolEnemy enemy : enemies) {
+                for (Enemy enemy : enemies) { // 修改为Enemy类型
                     if (bullet.intersects(enemy) && bullet.isActive()) {
                         // 敌人受到伤害
                         enemy.takeDamage(bullet.getDamage());
@@ -141,7 +141,7 @@ public class Level {
         entities.add(platform);
     }
 
-    public void addEnemy(PatrolEnemy enemy) {
+    public void addEnemy(Enemy enemy) { // 修改为Enemy类型
         enemies.add(enemy);
         entities.add(enemy);
     }

@@ -13,6 +13,7 @@ public class Bullet extends Entity {
     private boolean isExplosive;
     private double explosionRadius;
     private long creationTime;
+    private Entity owner; // 添加owner字段
     private static final long MAX_LIFETIME = 5000; // 5秒
 
     public Bullet(double x, double y, double width, double height) {
@@ -22,6 +23,7 @@ public class Bullet extends Entity {
         this.isExplosive = false;
         this.explosionRadius = 0;
         this.creationTime = System.currentTimeMillis();
+        this.owner = null;
     }
 
     @Override
@@ -108,4 +110,8 @@ public class Bullet extends Entity {
     public void setExplosionRadius(double explosionRadius) {
         this.explosionRadius = explosionRadius;
     }
+
+    // 添加owner的getter和setter
+    public Entity getOwner() { return owner; }
+    public void setOwner(Entity owner) { this.owner = owner; }
 }
