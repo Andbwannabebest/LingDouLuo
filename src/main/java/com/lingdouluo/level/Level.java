@@ -1,6 +1,7 @@
 // src/main/java/com/lingdouluo/level/Level.java
 package com.lingdouluo.level;
 
+import com.lingdouluo.config.Config;
 import com.lingdouluo.entity.*;
 import com.lingdouluo.physics.CollisionSystem;
 import javafx.scene.canvas.GraphicsContext;
@@ -68,30 +69,18 @@ public class Level {
         checkCompletion();
     }
 
+    // 在Level.java的render方法中修改
     public void render(GraphicsContext gc) {
         // 绘制背景
         gc.setFill(backgroundColor);
-        gc.fillRect(0, 0, 1280, 720);
+        gc.fillRect(0, 0, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT); // 使用新的窗口大小
 
-        // 绘制平台
-        for (Platform platform : platforms) {
-            platform.render(gc);
-        }
-
-        // 绘制敌人
-        for (Enemy enemy : enemies) { // 修改为Enemy类型
-            enemy.render(gc);
-        }
-
-        // 绘制其他实体
-        for (Entity entity : entities) {
-            entity.render(gc);
-        }
+        // ... 其他代码不变 ...
 
         // 绘制关卡边界（调试用）
         gc.setStroke(Color.rgb(100, 100, 100, 0.3));
         gc.setLineWidth(2);
-        gc.strokeRect(0, 0, 1280, 720);
+        gc.strokeRect(0, 0, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT); // 使用新的窗口大小
     }
 
     private void checkCollisions() {

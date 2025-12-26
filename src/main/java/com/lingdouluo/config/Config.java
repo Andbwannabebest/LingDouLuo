@@ -9,22 +9,22 @@ import java.io.FileWriter;
 import java.util.Properties;
 
 public class Config {
-    // 窗口设置
-    public static final int WINDOW_WIDTH = 720;
-    public static final int WINDOW_HEIGHT = 550;
+    // 窗口设置 - 缩小到700x500
+    public static final int WINDOW_WIDTH = 700;
+    public static final int WINDOW_HEIGHT = 500;
 
-    // 游戏设置 - 魂斗罗风格参数
-    public static final double GRAVITY = 0.5; // 标准重力
-    public static final double PLAYER_JUMP_FORCE = -12.0; // 标准跳跃力度
-    public static final double PLAYER_MOVE_SPEED = 2.0; // 进一步降低移动速度
+    // 游戏设置 - 速度降低到原来的1/10
+    public static final double GRAVITY = 0.05; // 原来0.5的1/10
+    public static final double PLAYER_JUMP_FORCE = -1.2; // 原来-12的1/10
+    public static final double PLAYER_MOVE_SPEED = 0.2; // 原来2.0的1/10
 
     // 魂斗罗风格参数
     public static final int PLAYER_MAX_HEALTH = 3;
     public static final int PLAYER_MAX_LIVES = 3;
 
     // 物理设置
-    public static final double FRICTION = 0.9; // 提高摩擦力，减少滑动
-    public static final double AIR_RESISTANCE = 0.98;
+    public static final double FRICTION = 0.85;
+    public static final double AIR_RESISTANCE = 0.95;
 
     // 游戏状态
     public static GameState GAME_STATE = GameState.MENU;

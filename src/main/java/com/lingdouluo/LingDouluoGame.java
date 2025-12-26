@@ -58,8 +58,8 @@ public class LingDouLuoGame {
         createLevels();
 
         // 初始化玩家1和玩家2 - 确保出生在安全位置
-        player1 = new Player(100, 500, 1);
-        player2 = new Player(200, 500, 2);
+        player1 = new Player(50, 300, 1);
+        player2 = new Player(100, 300, 2);
 
         player1.setInputManager(inputManager);
         player2.setInputManager(inputManager);
@@ -79,16 +79,17 @@ public class LingDouLuoGame {
         // 创建工厂区关卡
         Level factoryLevel = new Level("工厂区");
         factoryLevel.setBackgroundColor(Color.rgb(60, 60, 70));
-        factoryLevel.setPlayerSpawn(100, 500);
+        factoryLevel.setPlayerSpawn(50, 300);
 
-        // 添加平台 - 确保玩家出生在安全位置
-        factoryLevel.addPlatform(0, 600, 1280, 120);  // 地面
-        factoryLevel.addPlatform(200, 500, 100, 20);  // 平台1
-        factoryLevel.addPlatform(400, 450, 100, 20);  // 平台2
-        factoryLevel.addPlatform(600, 400, 100, 20);  // 平台3
-        factoryLevel.addPlatform(800, 350, 100, 20);  // 平台4
-        factoryLevel.addPlatform(1000, 300, 100, 20); // 平台5
-        factoryLevel.addPlatform(1100, 250, 100, 20); // 平台6
+        // 添加平台 - 适应新的700x500窗口大小
+        // 移除地面平台，所有平台都在空中
+        factoryLevel.addPlatform(0, 400, 700, 20);  // 底部平台（不是地面）
+        factoryLevel.addPlatform(100, 320, 100, 20);  // 平台1
+        factoryLevel.addPlatform(250, 280, 100, 20);  // 平台2
+        factoryLevel.addPlatform(400, 240, 100, 20);  // 平台3
+        factoryLevel.addPlatform(550, 200, 100, 20);  // 平台4
+        factoryLevel.addPlatform(200, 150, 100, 20);  // 平台5
+        factoryLevel.addPlatform(400, 100, 100, 20);  // 平台6
 
         levels.add(factoryLevel);
 
@@ -102,7 +103,7 @@ public class LingDouLuoGame {
 
             // 确保玩家出生在安全位置
             player1.setPosition(currentLevel.getPlayerSpawnX(), currentLevel.getPlayerSpawnY());
-            player2.setPosition(currentLevel.getPlayerSpawnX() + 100, currentLevel.getPlayerSpawnY());
+            player2.setPosition(currentLevel.getPlayerSpawnX() + 50, currentLevel.getPlayerSpawnY());
 
             player1.setActive(true);
             player2.setActive(true);
@@ -130,28 +131,28 @@ public class LingDouLuoGame {
         enemies.clear();
 
         // 创建巡逻敌人 - 确保敌人在平台上
-        PatrolEnemy enemy1 = new PatrolEnemy(400, 550, 64, 64);
-        enemy1.setPatrolRange(80);
-        enemy1.setPatrolSpeed(1.0);
+        PatrolEnemy enemy1 = new PatrolEnemy(150, 320, 40, 40);
+        enemy1.setPatrolRange(50);
+        enemy1.setPatrolSpeed(0.1); // 降低速度
         enemies.add(enemy1);
 
-        PatrolEnemy enemy2 = new PatrolEnemy(800, 300, 64, 64);
-        enemy2.setPatrolRange(60);
-        enemy2.setPatrolSpeed(0.8);
+        PatrolEnemy enemy2 = new PatrolEnemy(300, 280, 40, 40);
+        enemy2.setPatrolRange(40);
+        enemy2.setPatrolSpeed(0.08);
         enemies.add(enemy2);
 
         // 创建射击敌人
-        ShootingEnemy enemy3 = new ShootingEnemy(600, 350, 64, 64);
+        ShootingEnemy enemy3 = new ShootingEnemy(450, 240, 40, 40);
         enemies.add(enemy3);
 
-        ShootingEnemy enemy4 = new ShootingEnemy(1000, 200, 64, 64);
+        ShootingEnemy enemy4 = new ShootingEnemy(600, 200, 40, 40);
         enemies.add(enemy4);
 
         // 创建跳跃敌人
-        JumpingEnemy enemy5 = new JumpingEnemy(300, 550, 64, 64);
+        JumpingEnemy enemy5 = new JumpingEnemy(250, 150, 40, 40);
         enemies.add(enemy5);
 
-        JumpingEnemy enemy6 = new JumpingEnemy(900, 200, 64, 64);
+        JumpingEnemy enemy6 = new JumpingEnemy(450, 100, 40, 40);
         enemies.add(enemy6);
     }
 
@@ -423,55 +424,55 @@ public class LingDouLuoGame {
 
         // 标题
         gc.setFill(Color.YELLOW);
-        gc.setFont(Font.font("Arial", 72));
-        gc.fillText("灵斗罗", Config.WINDOW_WIDTH / 2 - 120, 150);
+        gc.setFont(Font.font("Arial", 48));
+        gc.fillText("灵斗罗", Config.WINDOW_WIDTH / 2 - 80, 100);
 
         // 副标题
         gc.setFill(Color.CYAN);
-        gc.setFont(Font.font("Arial", 36));
-        gc.fillText("双人合作射击游戏", Config.WINDOW_WIDTH / 2 - 180, 220);
+        gc.setFont(Font.font("Arial", 24));
+        gc.fillText("双人合作射击游戏", Config.WINDOW_WIDTH / 2 - 120, 150);
 
         // 操作说明 - 更新按键说明
         gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", 20));
-        gc.fillText("玩家1: WASD移动, K/空格跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 250, 300);
-        gc.fillText("玩家2: 方向键移动, 3/Ctrl跳跃, 2/Alt射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 250, 340);
-        gc.fillText("暂停: H(玩家1) 或 9(玩家2) 或 ESC", Config.WINDOW_WIDTH / 2 - 200, 380);
-        gc.fillText("返回主菜单: I, 重新开始: R, 下一关: N", Config.WINDOW_WIDTH / 2 - 200, 420);
-        gc.fillText("保存游戏: S, 加载游戏: L", Config.WINDOW_WIDTH / 2 - 120, 460);
+        gc.setFont(Font.font("Arial", 16));
+        gc.fillText("玩家1: WASD移动, K/空格跳跃, J射击, U切换武器", Config.WINDOW_WIDTH / 2 - 200, 200);
+        gc.fillText("玩家2: 方向键移动, 3/Ctrl跳跃, 2/Alt射击, 5切换武器", Config.WINDOW_WIDTH / 2 - 200, 230);
+        gc.fillText("暂停: H(玩家1) 或 9(玩家2) 或 ESC", Config.WINDOW_WIDTH / 2 - 150, 260);
+        gc.fillText("返回主菜单: I, 重新开始: R, 下一关: N", Config.WINDOW_WIDTH / 2 - 150, 290);
+        gc.fillText("保存游戏: S, 加载游戏: L", Config.WINDOW_WIDTH / 2 - 100, 320);
 
         // 开始游戏提示
         gc.setFill(Color.LIME);
-        gc.setFont(Font.font("Arial", 32));
-        gc.fillText("按 H 或 9 或 ESC 开始游戏", Config.WINDOW_WIDTH / 2 - 200, 550);
+        gc.setFont(Font.font("Arial", 24));
+        gc.fillText("按 H 或 9 或 ESC 开始游戏", Config.WINDOW_WIDTH / 2 - 150, 380);
 
         // 作者信息
         gc.setFill(Color.GRAY);
-        gc.setFont(Font.font("Arial", 16));
-        gc.fillText("© 2023 灵斗罗开发团队", Config.WINDOW_WIDTH / 2 - 100, 680);
+        gc.setFont(Font.font("Arial", 12));
+        gc.fillText("© 2023 灵斗罗开发团队", Config.WINDOW_WIDTH / 2 - 80, 450);
     }
 
     private void renderGameInfo() {
         gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", 14));
+        gc.setFont(Font.font("Arial", 12));
         gc.fillText("时间: " + (int)gameTime + "秒", 10, 20);
-        gc.fillText("关卡: " + (currentLevelIndex + 1), 10, 40);
-        gc.fillText("剩余敌人: " + enemies.size(), 10, 60);
+        gc.fillText("关卡: " + (currentLevelIndex + 1), 10, 35);
+        gc.fillText("剩余敌人: " + enemies.size(), 10, 50);
         gc.fillText("玩家1生命: " + player1.getHealth() + "/" + player1.getMaxHealth() +
-                " 生命数: " + player1.getLives(), 10, 80);
+                " 生命数: " + player1.getLives(), 10, 65);
         gc.fillText("玩家2生命: " + player2.getHealth() + "/" + player2.getMaxHealth() +
-                " 生命数: " + player2.getLives(), 10, 100);
+                " 生命数: " + player2.getLives(), 10, 80);
 
         // 显示武器信息
         if (player1.getCurrentWeapon() != null) {
             gc.fillText("玩家1武器: " + getWeaponName(player1.getCurrentWeapon()) +
                             " 弹药: " + (player1.getCurrentWeapon().getCurrentAmmo() == -1 ? "∞" : player1.getCurrentWeapon().getCurrentAmmo()),
-                    10, 120);
+                    10, 95);
         }
         if (player2.getCurrentWeapon() != null) {
             gc.fillText("玩家2武器: " + getWeaponName(player2.getCurrentWeapon()) +
                             " 弹药: " + (player2.getCurrentWeapon().getCurrentAmmo() == -1 ? "∞" : player2.getCurrentWeapon().getCurrentAmmo()),
-                    10, 140);
+                    10, 110);
         }
     }
 
@@ -489,17 +490,17 @@ public class LingDouLuoGame {
 
         // 标题
         gc.setFill(Color.YELLOW);
-        gc.setFont(Font.font("Arial", 48));
-        gc.fillText("游戏暂停", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 - 100);
+        gc.setFont(Font.font("Arial", 32));
+        gc.fillText("游戏暂停", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 - 60);
 
         // 选项
         gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", 24));
-        gc.fillText("继续游戏: 按 H 或 9 或 ESC", Config.WINDOW_WIDTH / 2 - 150, Config.WINDOW_HEIGHT / 2);
-        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 + 40);
-        gc.fillText("重新开始: 按 R", Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
-        gc.fillText("保存游戏: 按 S", Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 120);
-        gc.fillText("加载游戏: 按 L", Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 160);
+        gc.setFont(Font.font("Arial", 18));
+        gc.fillText("继续游戏: 按 H 或 9 或 ESC", Config.WINDOW_WIDTH / 2 - 120, Config.WINDOW_HEIGHT / 2);
+        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 70, Config.WINDOW_HEIGHT / 2 + 30);
+        gc.fillText("重新开始: 按 R", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 60);
+        gc.fillText("保存游戏: 按 S", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 90);
+        gc.fillText("加载游戏: 按 L", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 120);
     }
 
     private void renderGameOver() {
@@ -509,19 +510,19 @@ public class LingDouLuoGame {
 
         // 标题
         gc.setFill(Color.RED);
-        gc.setFont(Font.font("Arial", 48));
-        gc.fillText("游戏结束", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 - 100);
+        gc.setFont(Font.font("Arial", 32));
+        gc.fillText("游戏结束", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 - 60);
 
         // 分数
         gc.setFill(Color.WHITE);
-        gc.setFont(Font.font("Arial", 24));
-        gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2);
-        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 40);
+        gc.setFont(Font.font("Arial", 18));
+        gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2);
+        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 30);
 
         // 选项
         gc.setFill(Color.YELLOW);
-        gc.fillText("重新开始: 按 R", Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 100);
-        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 + 140);
+        gc.fillText("重新开始: 按 R", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 70);
+        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 70, Config.WINDOW_HEIGHT / 2 + 100);
     }
 
     private void renderLevelComplete() {
@@ -531,20 +532,20 @@ public class LingDouLuoGame {
 
         // 标题
         gc.setFill(Color.GREEN);
-        gc.setFont(Font.font("Arial", 48));
-        gc.fillText("关卡完成!", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 - 100);
+        gc.setFont(Font.font("Arial", 32));
+        gc.fillText("关卡完成!", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 - 60);
 
         // 统计信息
         gc.setFill(Color.YELLOW);
-        gc.setFont(Font.font("Arial", 24));
-        gc.fillText("用时: " + (int)gameTime + "秒", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2);
-        gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 40);
-        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 80, Config.WINDOW_HEIGHT / 2 + 80);
+        gc.setFont(Font.font("Arial", 18));
+        gc.fillText("用时: " + (int)gameTime + "秒", Config.WINDOW_WIDTH / 2 - 40, Config.WINDOW_HEIGHT / 2);
+        gc.fillText("玩家1分数: " + player1.getScore(), Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 30);
+        gc.fillText("玩家2分数: " + player2.getScore(), Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 60);
 
         // 选项
         gc.setFill(Color.CYAN);
-        gc.fillText("下一关: 按 N", Config.WINDOW_WIDTH / 2 - 60, Config.WINDOW_HEIGHT / 2 + 140);
-        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 100, Config.WINDOW_HEIGHT / 2 + 180);
+        gc.fillText("下一关: 按 N", Config.WINDOW_WIDTH / 2 - 40, Config.WINDOW_HEIGHT / 2 + 100);
+        gc.fillText("返回主菜单: 按 I", Config.WINDOW_WIDTH / 2 - 70, Config.WINDOW_HEIGHT / 2 + 130);
     }
 
     public void togglePause() {

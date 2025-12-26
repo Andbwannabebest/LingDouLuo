@@ -26,6 +26,7 @@ public class Bullet extends Entity {
         this.owner = null;
     }
 
+    // 在Bullet.java的update方法中修改边界检查
     @Override
     public void update(double deltaTime) {
         if (!isActive) return;
@@ -46,7 +47,7 @@ public class Bullet extends Entity {
         x += velocityX;
         y += velocityY;
 
-        // 边界检查
+        // 边界检查 - 使用新的窗口大小
         if (x < -width || x > Config.WINDOW_WIDTH ||
                 y < -height || y > Config.WINDOW_HEIGHT) {
             isActive = false;

@@ -45,7 +45,7 @@ public class Player extends Entity {
     private static final int MAX_WEAPONS = 3;
 
     public Player(double x, double y, int playerId) {
-        super(x, y, 32, 64); // 玩家尺寸
+        super(x, y, 24, 48); // 缩小玩家尺寸以适应新窗口
         this.playerId = playerId;
         this.maxHealth = Config.PLAYER_MAX_HEALTH;
         this.health = maxHealth;
@@ -160,8 +160,9 @@ public class Player extends Entity {
                 isJumping = true;
                 isOnGround = false;
                 hasDoubleJumped = false;
-            } else if (canDoubleJump && !hasDoubleJumped) {
-                // 二段跳
+            } else if (canDoubleJump && !hasDoubleJumped &&
+                    System.currentTimeMillis() - lastGroundTime < 500) {
+                // 二段跳：需要在离开地面后500毫秒内
                 velocityY = Config.PLAYER_JUMP_FORCE * 0.7; // 二段跳力度较小
                 hasDoubleJumped = true;
                 isJumping = true;
@@ -216,8 +217,8 @@ public class Player extends Entity {
         }
 
         // 限制垂直速度
-        if (velocityY > 15) velocityY = 15;
-        if (velocityY < -15) velocityY = -15;
+        if (velocityY > 2.0) velocityY = 2.0; // 降低最大下落速度
+        if (velocityY < -2.0) velocityY = -2.0; // 降低最大上升速度
 
         // 应用速度 - 简化计算，避免乱飘
         x += velocityX * deltaTime * 60;
@@ -233,7 +234,7 @@ public class Player extends Entity {
             velocityX = 0;
         }
 
-        // 垂直边界 - 完全取消掉落死亡，只在屏幕内
+        // 垂直边界 - 取消掉落死亡，只在屏幕内
         if (y < 0) {
             y = 0;
             velocityY = 0;
@@ -241,15 +242,14 @@ public class Player extends Entity {
         if (y > Config.WINDOW_HEIGHT - height) {
             y = Config.WINDOW_HEIGHT - height;
             velocityY = 0;
-            isOnGround = true;
-            isJumping = false;
-            hasDoubleJumped = false;
+            // 注意：这里不设置isOnGround = true，因为取消了地面判断
+            // 只有站在平台上才是onGround
         }
 
         // 简单的摩擦力 - 只在落地时应用
         if (isOnGround && Math.abs(velocityX) > 0) {
             velocityX *= Config.FRICTION;
-            if (Math.abs(velocityX) < 0.1) {
+            if (Math.abs(velocityX) < 0.01) { // 降低停止阈值
                 velocityX = 0;
             }
         }
@@ -328,16 +328,16 @@ public class Player extends Entity {
 
         // 渲染玩家标识
         gc.setFill(Color.WHITE);
-        gc.setFont(javafx.scene.text.Font.font("Arial", 12));
+        gc.setFont(javafx.scene.text.Font.font("Arial", 10));
         gc.fillText("P" + playerId, x + width/2 - 5, y - 5);
 
         // 渲染武器方向指示器
         if (isFacingRight) {
             gc.setFill(Color.YELLOW);
-            gc.fillRect(x + width, y + height/2 - 2, 10, 4);
+            gc.fillRect(x + width, y + height/2 - 2, 8, 4);
         } else {
             gc.setFill(Color.YELLOW);
-            gc.fillRect(x - 10, y + height/2 - 2, 10, 4);
+            gc.fillRect(x - 8, y + height/2 - 2, 8, 4);
         }
 
         // 如果正在射击，显示射击效果
@@ -354,9 +354,9 @@ public class Player extends Entity {
                 // 普通射击效果
                 gc.setFill(Color.ORANGE);
                 if (isFacingRight) {
-                    gc.fillOval(x + width, y + height/2 - 5, 15, 10);
+                    gc.fillOval(x + width, y + height/2 - 4, 12, 8);
                 } else {
-                    gc.fillOval(x - 15, y + height/2 - 5, 15, 10);
+                    gc.fillOval(x - 12, y + height/2 - 4, 12, 8);
                 }
             }
         }
@@ -392,7 +392,7 @@ public class Player extends Entity {
     }
 
     private void handlePlatformCollision(CollisionResult collision) {
-        // 平台碰撞处理
+        // 平台碰撞处理 - 只有在平台上才算onGround
         if (collision.getNormalY() < 0) { // 从上方碰撞
             y = collision.getEntityY() - height;
             velocityY = 0;
@@ -441,8 +441,8 @@ public class Player extends Entity {
             isActive = true;
             health = maxHealth;
             // 重置到安全位置
-            x = 100;
-            y = 500;
+            x = 50;
+            y = 300;
             velocityX = 0;
             velocityY = 0;
             respawnTime = 0;
